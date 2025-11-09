@@ -26,8 +26,6 @@ You can find more discussions on the #website channel on [the GraphQL Discord](h
 
 - `/learn/` 配下のドキュメント（入門ガイド、ベストプラクティスなど）
 
-翻訳の進捗状況や貢献方法については、[Issues](https://github.com/graphql/graphql.github.io/issues)や[Pull Requests](https://github.com/graphql/graphql.github.io/pulls)をご確認ください。
-
 ## Overview
 
 **GraphQL** is a query language for APIs and a runtime for fulfilling those queries with your existing data. It provides:
