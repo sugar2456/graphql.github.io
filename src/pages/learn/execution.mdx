@@ -1,14 +1,14 @@
 import { Callout } from "nextra/components"
 
-# Execution
+# 実行
 
-<p className="learn-subtitle">Learn how GraphQL provides data for requested fields</p>
+<p className="learn-subtitle">GraphQLがリクエストされたフィールドにデータを提供する方法を学ぶ</p>
 
-After a parsed document is [validated](/learn/validation/), a client's request will be [executed](https://spec.graphql.org/draft/#sec-Execution) by the GraphQL server and the returned result will mirror the shape of the requested query. On this page, you'll learn about the execution phase of GraphQL operations where data is read from or written to an existing source depending on what fields are requested by a client.
+解析されたドキュメントが[検証](/learn/validation/)された後、クライアントのリクエストはGraphQLサーバーによって[実行](https://spec.graphql.org/draft/#sec-Execution)され、返される結果はリクエストされたクエリの形状を反映します。このページでは、クライアントがリクエストしたフィールドに応じて、既存のソースからデータを読み取ったり、既存のソースにデータを書き込んだりするGraphQL操作の実行フェーズについて学びます。
 
-## Field resolvers
+## フィールドリゾルバ
 
-GraphQL cannot execute operations without a type system, so let's use an example type system to illustrate executing a query. This is a part of the same type system used throughout the examples in this guide:
+GraphQLは型システムなしでは操作を実行できないため、クエリの実行を説明するためにサンプル型システムを使用しましょう。これは、このガイド全体の例で使用されている同じ型システムの一部です：
 
 ```graphql
 type Query {
@@ -32,7 +32,7 @@ type Starship {
 }
 ```
 
-To describe what happens when a query is executed, let's walk through an example:
+クエリが実行されるときに何が起こるかを説明するために、例を見てみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -47,15 +47,15 @@ query {
 }
 ```
 
-You can think of each field in a GraphQL query as a function or method of the previous type which returns the next type. This is exactly how GraphQL works—each field on each type is backed by a _resolver function_ that is written by the GraphQL server developer. When a field is executed, the corresponding resolver is called to produce the next value.
+GraphQLクエリの各フィールドは、次の型を返す前の型の関数またはメソッドとして考えることができます。これがまさにGraphQLの動作方法です—各型の各フィールドは、GraphQLサーバー開発者によって記述された_リゾルバ関数_によってサポートされています。フィールドが実行されると、対応するリゾルバが呼び出されて次の値が生成されます。
 
-If a field produces a scalar value like a string or number, then the execution completes. However, if a field produces an object value then the query will contain another selection of fields that apply to that object. This continues until the leaf values are reached. GraphQL queries always end at Scalar or Enum types.
+フィールドが文字列や数値のようなスカラー値を生成する場合、実行は完了します。しかし、フィールドがオブジェクト値を生成する場合、クエリにはそのオブジェクトに適用される別のフィールドの選択が含まれます。これはリーフ値に到達するまで続きます。GraphQLクエリは常にスカラー型または列挙型で終わります。
 
-## Root fields and resolvers
+## ルートフィールドとリゾルバ
 
-At the top level of every GraphQL server is an Object type that represents the possible entry points into the GraphQL API, it's often called "the `query` root operation type" or the `Query` type. If the API supports mutations to write data and subscriptions to fetch real-time data as well, then it will have `Mutation` and `Subscription` types that expose fields to perform these kinds of operations too. You can learn more about these types on the [Schema and Types page](/learn/schema/#the-query-mutation-and-subscription-types).
+すべてのGraphQLサーバーの最上位には、GraphQL APIへの可能なエントリーポイントを表すオブジェクト型があり、これはしばしば「`query`ルート操作型」または`Query`型と呼ばれます。APIがデータを書き込むためのミューテーションとリアルタイムデータを取得するためのサブスクリプションもサポートしている場合、これらの種類の操作を実行するためのフィールドを公開する`Mutation`型と`Subscription`型も持つことになります。これらの型について詳しくは、[スキーマと型のページ](/learn/schema/#the-query-mutation-and-subscription-types)をご覧ください。
 
-In this example, our `Query` type provides a field called `human` which accepts the argument `id`. The resolver function for this field likely accesses a database and then constructs and returns a `Human` type:
+この例では、`Query`型は`id`引数を受け入れる`human`というフィールドを提供しています。このフィールドのリゾルバ関数は、おそらくデータベースにアクセスしてから`Human`型を構築して返します：
 
 ```js
 function resolveHumanQuery(obj, args, context, info) {
@@ -63,20 +63,20 @@ function resolveHumanQuery(obj, args, context, info) {
 }
 ```
 
-This example is written in JavaScript, however GraphQL servers can be built in [many different languages](/code/). In the reference implementation, a resolver function receives four arguments:
+この例はJavaScriptで記述されていますが、GraphQLサーバーは[多くの異なる言語](/code/)で構築できます。リファレンス実装では、リゾルバ関数は4つの引数を受け取ります：
 
-- `obj`: The previous object (for a field on the root `Query` type, this argument is often not used).
-- `args`: The arguments provided to the field in the GraphQL operation.
-- `context`: A value provided to every resolver that may hold important contextual information like the currently logged in user, or access to a database.
-- `info`: generally only used in advanced use-cases, this is a value holding field-specific information relevant to the current operation as well as the schema details; refer to [type GraphQLResolveInfo](/graphql-js/type/#graphqlobjecttype) for more details.
+- `obj`: 前のオブジェクト（ルート`Query`型のフィールドの場合、この引数はしばしば使用されません）。
+- `args`: GraphQL操作でフィールドに提供される引数。
+- `context`: すべてのリゾルバに提供される値で、現在ログインしているユーザーやデータベースへのアクセスなど、重要なコンテキスト情報を保持する場合があります。
+- `info`: 一般的に高度なユースケースでのみ使用され、現在の操作に関連するフィールド固有の情報とスキーマの詳細を保持する値です。詳細については、[type GraphQLResolveInfo](/graphql-js/type/#graphqlobjecttype)を参照してください。
 
 <Callout type="info">
-Note that while a query operation could technically write data to the underlying data system during its execution, mutation operations are conventionally used for requests that produce side effects during their execution. And because mutation operations produce side effects, GraphQL implementations can be expected to execute these fields serially.
+クエリ操作は技術的に実行中に基盤となるデータシステムにデータを書き込むことができますが、ミューテーション操作は、実行中に副作用を生成するリクエストに従来使用されています。また、ミューテーション操作は副作用を生成するため、GraphQL実装はこれらのフィールドを順次実行することが期待されます。
 </Callout>
 
-## Asynchronous resolvers
+## 非同期リゾルバ
 
-Let's take a closer look at what's happening in this resolver function:
+このリゾルバ関数で何が起こっているかを詳しく見てみましょう：
 
 ```js
 function resolveHuman(obj, args, context, info) {
@@ -84,13 +84,13 @@ function resolveHuman(obj, args, context, info) {
 }
 ```
 
-The `id` argument in the GraphQL query specifies the user whose data is requested, while `context` provides access to retrieve this data from a database. Since loading from a database is an asynchronous operation, this returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise). In JavaScript, Promises are used to work with asynchronous values, but the same concept exists in many languages, often called _Futures_, _Tasks_, or _Deferred_. When the database returns the data, we can construct and return a new `Human` object.
+GraphQLクエリの`id`引数は、データがリクエストされているユーザーを指定し、`context`はデータベースからこのデータを取得するためのアクセスを提供します。データベースからの読み込みは非同期操作であるため、これは[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)を返します。JavaScriptでは、Promiseは非同期値を操作するために使用されますが、同じ概念は多くの言語に存在し、しばしば_Futures_、_Tasks_、または_Deferred_と呼ばれます。データベースがデータを返すと、新しい`Human`オブジェクトを構築して返すことができます。
 
-Notice that while the resolver function needs to be aware of Promises, the GraphQL query does not. It simply expects the `human` field to return something that can be further resolved to a scalar `name` value. During execution, GraphQL will wait for Promises, Futures, and Tasks to be completed before continuing and will do so with optimal concurrency.
+リゾルバ関数はPromiseを認識する必要がありますが、GraphQLクエリはそうではないことに注意してください。それは単に`human`フィールドが、さらにスカラー`name`値に解決できる何かを返すことを期待しています。実行中、GraphQLは続行する前にPromise、Futures、およびTasksが完了するのを待ち、最適な並行性でそれを行います。
 
-## Trivial resolvers
+## 単純なリゾルバ
 
-Now that a `Human` object is available, GraphQL execution can continue with the fields requested for this type:
+`Human`オブジェクトが利用可能になったので、GraphQLの実行はこの型に対してリクエストされたフィールドで続行できます：
 
 ```js
 function resolveHumanName(obj, args, context, info) {
@@ -98,31 +98,31 @@ function resolveHumanName(obj, args, context, info) {
 }
 ```
 
-A GraphQL server is powered by a type system that is used to determine what to do next. Even before the `human` field returns anything, GraphQL knows the next step will be to resolve fields on the `Human` type since the type system tells it that the `human` field will return this output type.
+GraphQLサーバーは、次に何をすべきかを決定するために使用される型システムによって動力を得ています。`human`フィールドが何かを返す前でも、GraphQLは次のステップが`Human`型のフィールドを解決することになるとわかっています。これは、型システムが`human`フィールドがこの出力型を返すことを伝えているためです。
 
-Resolving the name in this case is straightforward. The name resolver function is called and the `obj` argument is the new `Human` object returned from the previous field. In this case, we expect this object to have a `name` property, which we can read and return directly.
+この場合、名前を解決することは簡単です。名前リゾルバ関数が呼び出され、`obj`引数は前のフィールドから返された新しい`Human`オブジェクトです。この場合、このオブジェクトに`name`プロパティがあることを期待しており、それを読み取って直接返すことができます。
 
-Many GraphQL libraries let you omit resolvers this simple, assuming that if a resolver isn't provided for a field, a property of the same name should be read and returned.
+多くのGraphQLライブラリでは、フィールドに対してリゾルバが提供されていない場合、同じ名前のプロパティが読み取られて返されることを想定して、このような単純なリゾルバを省略できます。
 
-## Scalar coercion
+## スカラー強制型変換
 
-While the `name` field is being resolved, the `appearsIn` and `starships` fields can be resolved concurrently. The `appearsIn` field could also have a trivial resolver, but let's take a closer look:
+`name`フィールドが解決されている間、`appearsIn`フィールドと`starships`フィールドは並行して解決できます。`appearsIn`フィールドも単純なリゾルバを持つことができますが、詳しく見てみましょう：
 
 ```js
 const Human = {
   appearsIn(obj) {
-    return obj.appearsIn; // e.g. [4, 5, 6]
+    return obj.appearsIn; // 例: [4, 5, 6]
   },
 };
 ```
 
-Notice that our type system claims `appearsIn` will return Enum types with known values, however, this function is returning numbers! Indeed if we look up at the result we'll see that the appropriate values for the Enum type are being returned. What's going on?
+型システムは`appearsIn`が既知の値を持つ列挙型を返すと主張していますが、この関数は数値を返しています！確かに結果を見ると、列挙型の適切な値が返されていることがわかります。何が起こっているのでしょうか？
 
-This is an example of _scalar coercion_. The type system knows what to expect and will convert the values returned by a resolver function into something that upholds the API contract. In this case, there may be an Enum type defined on our server that uses numbers like `4`, `5`, and `6` internally, but represents them as the expected values in the GraphQL type system.
+これは_スカラー強制型変換_の例です。型システムは何を期待すべきかを知っており、リゾルバ関数によって返された値を、API契約を維持するものに変換します。この場合、サーバー上に`4`、`5`、`6`のような数値を内部的に使用するが、GraphQL型システムでは期待される値としてそれらを表す列挙型が定義されている可能性があります。
 
-## List resolvers
+## リストリゾルバ
 
-We've already seen some of what happens when a field returns a list of things with the `appearsIn` field above. It returned a [List type](/learn/schema/#lists) containing Enum type values, and since that's what the type system expected, each item in the list was coerced to the appropriate value. What happens when the `starships` field is resolved?
+上記の`appearsIn`フィールドで、フィールドがもののリストを返すときに何が起こるかの一部をすでに見ました。これは列挙型の値を含む[リスト型](/learn/schema/#lists)を返し、それが型システムが期待していたものであるため、リスト内の各項目が適切な値に強制型変換されました。`starships`フィールドが解決されるとき、何が起こるでしょうか？
 
 ```js
 function resolveHumanStarships(obj, args, context, info) {
@@ -134,15 +134,15 @@ function resolveHumanStarships(obj, args, context, info) {
 }
 ```
 
-The resolver for this field is not just returning a Promise, it's returning a _list_ of Promises. The `Human` object had a list of IDs of the `Starships` they piloted, but we need to load all of those IDs to get real Starship objects.
+このフィールドのリゾルバは、単にPromiseを返すだけでなく、Promiseの_リスト_を返しています。`Human`オブジェクトには、彼らが操縦した`Starships`のIDのリストがありましたが、実際のStarshipオブジェクトを取得するには、それらのIDをすべて読み込む必要があります。
 
-GraphQL will wait for all of these Promises concurrently before continuing, and when left with a list of objects, it will continue yet again to load the `name` field on each of these items concurrently.
+GraphQLは続行する前に、これらすべてのPromiseを並行して待機し、オブジェクトのリストが残ると、これらの各項目の`name`フィールドを再度並行して読み込みます。
 
-## Producing the result
+## 結果の生成
 
-As each field is resolved, the resulting value is placed into a key-value map with the field name (or alias) as the key and the resolved value as the value. This continues from the bottom leaf fields of the query back up to the original field on the root `Query` type. Collectively these produce a structure that mirrors the original query which can then be sent (typically as JSON) to the client that requested it.
+各フィールドが解決されると、結果の値は、フィールド名（またはエイリアス）をキーとし、解決された値を値とするキー値マップに配置されます。これは、クエリの最下部のリーフフィールドから、ルート`Query`型の元のフィールドまで続きます。これらをまとめると、元のクエリを反映する構造が生成され、それを（通常はJSONとして）リクエストしたクライアントに送信できます。
 
-Let's take one last look at the original query to see how all these resolving functions produce a result:
+これらの解決関数がどのように結果を生成するかを確認するために、元のクエリをもう一度見てみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -157,17 +157,17 @@ query {
 }
 ```
 
-As we can see, each field in the nested selection sets resolves to a scalar leaf value during execution of the query.
+ご覧のとおり、ネストされた選択セット内の各フィールドは、クエリの実行中にスカラーのリーフ値に解決されます。
 
-## Next steps
+## 次のステップ
 
-To recap what we've learned about execution:
+実行について学んだことをまとめると：
 
-- Each field in a GraphQL type system will have a corresponding resolver function that provides data for the field from an existing data source
-- Execution begins at the top-level `Query`, `Mutation`, or `Subscription` fields
-- Resolvers may execute asynchronously
-- Scalar coercion converts values into the types expected by the schema
-- When a field on an Object type returns a List type of other objects, additional data may need to be fetched from the underlying data source to transform any foreign key-like references (such as IDs) into the related objects
-- Once all of the requested fields have been resolved to the expected leaf values, the result is sent to the client, typically as JSON
+- GraphQL型システムの各フィールドには、既存のデータソースからフィールドにデータを提供する対応するリゾルバ関数があります
+- 実行は最上位の`Query`、`Mutation`、または`Subscription`フィールドから始まります
+- リゾルバは非同期で実行される場合があります
+- スカラー強制型変換は、値をスキーマが期待する型に変換します
+- オブジェクト型のフィールドが他のオブジェクトのリスト型を返す場合、外部キーのような参照（IDなど）を関連オブジェクトに変換するために、基盤となるデータソースから追加のデータを取得する必要がある場合があります
+- リクエストされたすべてのフィールドが期待されるリーフ値に解決されると、結果がクライアントに送信されます（通常はJSONとして）
 
-Now that we understand how operations are executed, we can move to the last stage of the lifecycle of a GraphQL request where the [response](/learn/response/) is delivered to a client.
+操作がどのように実行されるかを理解したので、GraphQLリクエストのライフサイクルの最後の段階である[レスポンス](/learn/response/)がクライアントに配信される段階に進むことができます。

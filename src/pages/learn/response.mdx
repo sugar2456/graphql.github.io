@@ -1,14 +1,14 @@
 import { Callout } from "nextra/components"
 
-# Response
+# レスポンス
 
-<p className="learn-subtitle">Learn how GraphQL returns data to clients</p>
+<p className="learn-subtitle">GraphQLがクライアントにデータを返す方法を学ぶ</p>
 
-After a GraphQL document has been [validated](/learn/validation/) and [executed](/learn/execution/), the server will return a [response](https://spec.graphql.org/draft/#sec-Response) to the requesting client. One of GraphQL's strengths is that the server response reflects the shape of the client's original request, but a response may also contain helpful information if something unexpected happened before or during the execution of an operation. On this page, we'll take a deeper exploration of this final phase in the lifecycle of a GraphQL request.
+GraphQLドキュメントが[検証](/learn/validation/)され、[実行](/learn/execution/)された後、サーバーはリクエストしたクライアントに[レスポンス](https://spec.graphql.org/draft/#sec-Response)を返します。GraphQLの強みの1つは、サーバーのレスポンスがクライアントの元のリクエストの形状を反映することですが、操作の実行前または実行中に予期しないことが発生した場合、レスポンスには有用な情報も含まれる場合があります。このページでは、GraphQLリクエストのライフサイクルのこの最終フェーズについて詳しく説明します。
 
-## Data
+## データ
 
-As we have seen in the examples throughout this guide, when a GraphQL request is executed the response is returned on a top-level `data` key. For example:
+このガイド全体の例で見たように、GraphQLリクエストが実行されると、レスポンスは最上位の`data`キーで返されます。例えば：
 
 ```graphql
 # { "graphiql": true }
@@ -23,23 +23,23 @@ query {
 }
 ```
 
-The inclusion of the `data` key isn't an arbitrary decision made by the underlying GraphQL implementation—it's described by the [GraphQL specification](https://spec.graphql.org/draft/#sec-Data). Under this key, you will find the result of the execution of the requested operation, which may include partial data for the requested fields if errors were raised during the execution of some field resolvers.
+`data`キーの包含は、基盤となるGraphQL実装によって行われた任意の決定ではありません—これは[GraphQL仕様](https://spec.graphql.org/draft/#sec-Data)によって記述されています。このキーの下に、リクエストされた操作の実行結果が見つかります。一部のフィールドリゾルバの実行中にエラーが発生した場合、リクエストされたフィールドの部分的なデータが含まれる場合があります。
 
-One thing that the GraphQL specification doesn't require is a specific serialization format for the response. That said, responses are typically formatted as JSON, as in the example above.
+GraphQL仕様が要求していないことの1つは、レスポンスの特定のシリアル化形式です。とはいえ、上記の例のように、レスポンスは通常JSONとしてフォーマットされます。
 
-Additionally, the GraphQL specification doesn't require the use of a particular transport protocol for requests either, although it is [common for HTTP to be used](/learn/serving-over-http/) for stateless query and mutations operations. Long-lived, stateful subscription operations are often supported by WebSockets or server-sent events instead.
+さらに、GraphQL仕様は、リクエストに特定のトランスポートプロトコルの使用を要求していませんが、ステートレスなクエリとミューテーション操作には[HTTPが一般的に使用されます](/learn/serving-over-http/)。長期間にわたるステートフルなサブスクリプション操作は、代わりにWebSocketまたはサーバー送信イベントによってサポートされることがよくあります。
 
 <Callout type="info">
-There is [a draft GraphQL over HTTP specification](https://graphql.github.io/graphql-over-http/draft/) available with further guidelines for using HTTP with GraphQL clients and servers.
+GraphQLクライアントとサーバーでHTTPを使用するための追加のガイドラインを含む[GraphQL over HTTP仕様のドラフト](https://graphql.github.io/graphql-over-http/draft/)が利用可能です。
 </Callout>
 
-## Errors
+## エラー
 
-In addition to the `data` key, the GraphQL specification outlines how [errors](https://spec.graphql.org/draft/#sec-Errors) should be formatted in the response. Whether the GraphQL implementation provides partial data with the error information in the response will depend on the type of error that was raised. Let's look at the different kinds of errors that can occur during the lifecycle of a GraphQL request.
+`data`キーに加えて、GraphQL仕様は、レスポンスで[エラー](https://spec.graphql.org/draft/#sec-Errors)をどのようにフォーマットするかを概説しています。GraphQL実装がレスポンスでエラー情報とともに部分的なデータを提供するかどうかは、発生したエラーの種類によって異なります。GraphQLリクエストのライフサイクル中に発生する可能性のあるさまざまな種類のエラーを見てみましょう。
 
-### Request errors
+### リクエストエラー
 
-Request errors typically occur because the client made a mistake. For example, there may be a _syntax error_ in the document, such as a missing bracket or the use of an unknown root operation type keyword:
+リクエストエラーは、通常、クライアントが間違いを犯したために発生します。例えば、ドキュメントに_構文エラー_がある可能性があります。欠落している括弧や、未知のルート操作型キーワードの使用などです：
 
 {/* <!-- snippet-ignore --> */}
 ```graphql
@@ -52,11 +52,11 @@ operation {
 }
 ```
 
-The `message` key inside the `errors` object provides some helpful information for the developer to understand what kind of error was raised, and the `locations` key, if present, indicates where the error occurred in the document.
+`errors`オブジェクト内の`message`キーは、開発者が発生したエラーの種類を理解するのに役立つ情報を提供し、`locations`キー（存在する場合）は、ドキュメント内でエラーが発生した場所を示します。
 
-Sometimes, a GraphQL request may be syntactically correct, but when the server parses and [validates](/learn/validation/) the document against the schema, it finds an issue with part of the operation and raises a _validation error_.
+場合によっては、GraphQLリクエストが構文的に正しい場合でも、サーバーがドキュメントを解析してスキーマに対して[検証](/learn/validation/)すると、操作の一部に問題が見つかり、_検証エラー_が発生する可能性があります。
 
-For example, the client may request a field that does not exist on the `Starship` type:
+例えば、クライアントが`Starship`型に存在しないフィールドをリクエストする場合があります：
 
 ```graphql
 # { "graphiql": true }
@@ -67,7 +67,7 @@ query {
 }
 ```
 
-Validation errors also occur when clients specify incorrect variable types for their corresponding field arguments:
+クライアントが対応するフィールド引数に対して間違った変数型を指定した場合にも、検証エラーが発生します：
 
 ```graphql
 # { "graphiql": true, "variables": { "ep": "JEDI" } }
@@ -78,15 +78,15 @@ query HeroForEpisode($ep: String!) {
 }
 ```
 
-In the previous examples, we can see that when a request error occurs the `data` key will not be included because the server returns an error response to the client before the field resolvers are executed.
+前の例では、リクエストエラーが発生した場合、フィールドリゾルバが実行される前にサーバーがクライアントにエラーレスポンスを返すため、`data`キーは含まれないことがわかります。
 
-### Field errors
+### フィールドエラー
 
-Field errors are raised if something unexpected happens during execution. For example, a resolver may raise an error directly, or may return invalid data such as a null value for a field that has a Non-Null output type.
+実行中に予期しないことが発生した場合、フィールドエラーが発生します。例えば、リゾルバが直接エラーを発生させる可能性があるか、非null出力型を持つフィールドに対してnull値などの無効なデータを返す可能性があります。
 
-In these cases, GraphQL will attempt to continue executing the other fields and return a partial response, with the `data` key appearing alongside the `errors` key.
+これらの場合、GraphQLは他のフィールドの実行を続行しようとし、`data`キーが`errors`キーと一緒に表示される部分的なレスポンスを返します。
 
-Let's look at an example:
+例を見てみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -96,28 +96,28 @@ mutation {
 }
 ```
 
-The mutation above attempts to delete two starships in a single operation, but no starship exists with an ID of `3010` so the server throws an error. In the response, we can see information about the error that occurred for the field that was aliased as `secondShip`. Under the `data` key, we also see that the ID of the first ship was returned to indicate successful deletion, while the second ship produced a null result due to the error raised in its resolver function.
+上記のミューテーションは、1つの操作で2つの宇宙船を削除しようとしますが、IDが`3010`の宇宙船は存在しないため、サーバーはエラーをスローします。レスポンスでは、`secondShip`としてエイリアスされたフィールドで発生したエラーに関する情報を確認できます。`data`キーの下では、最初の宇宙船のIDが正常な削除を示すために返されたのに対し、2番目の宇宙船は、そのリゾルバ関数で発生したエラーによりnull結果を生成したことも確認できます。
 
-### Network errors
+### ネットワークエラー
 
-As with network calls to any type of API, network errors that are not specific to GraphQL may happen at any point during a request. These kinds of errors will block communication between the client and server before the request is complete, such as an SSL error or a connection timeout. Depending on the GraphQL server and client libraries that you choose, there may be features built into them that support special network error handling such as retries for failed operations.
+あらゆる種類のAPIへのネットワーク呼び出しと同様に、GraphQLに固有ではないネットワークエラーが、リクエスト中の任意の時点で発生する可能性があります。これらの種類のエラーは、リクエストが完了する前にクライアントとサーバー間の通信をブロックします。SSLエラーや接続タイムアウトなどです。選択したGraphQLサーバーとクライアントライブラリに応じて、失敗した操作の再試行など、特別なネットワークエラー処理をサポートする機能が組み込まれている場合があります。
 
-## Extensions
+## 拡張機能
 
-The final top-level key allowed by the GraphQL specification in a response is the `extensions` key. This key is reserved for GraphQL implementations to provide additional information about the response and though it must be an object if present, there are no other restrictions on what it may contain.
+GraphQL仕様がレスポンスで許可する最後の最上位キーは`extensions`キーです。このキーは、GraphQL実装がレスポンスに関する追加情報を提供するために予約されており、存在する場合はオブジェクトである必要がありますが、含まれる内容に関する他の制限はありません。
 
-For example, some GraphQL servers may include telemetry data or information about rate limit consumption under this key. Note that what data is available in `extensions` and whether this data is available in production or development environments will depend entirely on the specific GraphQL implementation.
+例えば、一部のGraphQLサーバーは、このキーの下にテレメトリーデータやレート制限の消費に関する情報を含める場合があります。`extensions`で利用可能なデータと、このデータが本番環境または開発環境で利用可能かどうかは、特定のGraphQL実装に完全に依存することに注意してください。
 
-## Next steps
+## 次のステップ
 
-To recap what we've learned about GraphQL response formats:
+GraphQLレスポンス形式について学んだことをまとめると：
 
-- The GraphQL specification allows three top-level keys in a response: `data`, `errors`, and `extensions`
-- At least one of `data` or `errors` will be present on the response (when it contains both it is a "partial response")
-- The `data` key contains the result of the executed operation
-- Information about raised errors is included in the `errors` key of the response
-- Request errors (such as syntax or validation errors) are raised before execution begins so `data` won't be included in the response
-- When a field error occurs during execution, there will be a description of the issue in the `errors` key and there may be partial data included with the `data` key
-- GraphQL implementations may include additional arbitrary information about the response in the `extensions` key
+- GraphQL仕様では、レスポンスに3つの最上位キーが許可されています：`data`、`errors`、および`extensions`
+- `data`または`errors`の少なくとも1つがレスポンスに存在します（両方を含む場合は「部分的なレスポンス」です）
+- `data`キーには、実行された操作の結果が含まれます
+- 発生したエラーに関する情報は、レスポンスの`errors`キーに含まれます
+- リクエストエラー（構文エラーや検証エラーなど）は、実行が開始される前に発生するため、`data`はレスポンスに含まれません
+- 実行中にフィールドエラーが発生した場合、`errors`キーに問題の説明があり、`data`キーに部分的なデータが含まれる場合があります
+- GraphQL実装は、`extensions`キーにレスポンスに関する追加の任意の情報を含める場合があります
 
-Now that you understand the different phases of a GraphQL request and how responses are provided to clients, head over to the [Introspection](/learn/introspection) page to learn about how a GraphQL server can query information about its own schema.
+GraphQLリクエストの異なるフェーズと、レスポンスがクライアントに提供される方法を理解したので、[イントロスペクション](/learn/introspection)ページに進んで、GraphQLサーバーが独自のスキーマに関する情報をクエリする方法について学んでください。

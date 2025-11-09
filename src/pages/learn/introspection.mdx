@@ -1,14 +1,14 @@
-# Introspection
+# イントロスペクション
 
-<p className="learn-subtitle">Learn how to query information about a GraphQL schema</p>
+<p className="learn-subtitle">GraphQLスキーマに関する情報をクエリする方法を学ぶ</p>
 
-It's often useful to ask a GraphQL schema for information about what features it supports. GraphQL allows us to do so using the [introspection system](https://spec.graphql.org/draft/#sec-Introspection).
+GraphQLスキーマがサポートする機能について情報を尋ねることは、しばしば有用です。GraphQLは、[イントロスペクションシステム](https://spec.graphql.org/draft/#sec-Introspection)を使用してこれを行うことを可能にします。
 
-Introspection queries are special kinds of queries that allow you to learn about a GraphQL API's schema, and they also help power GraphQL development tools. On this page, we'll learn how to run different queries to learn more about an underlying schema's types, fields, and descriptions.
+イントロスペクションクエリは、GraphQL APIのスキーマについて学ぶことを可能にする特別な種類のクエリであり、GraphQL開発ツールを強化するのにも役立ちます。このページでは、基盤となるスキーマの型、フィールド、説明について詳しく学ぶために、さまざまなクエリを実行する方法を学びます。
 
-## Type name introspection
+## 型名のイントロスペクション
 
-We have already seen an example of introspection on the [Schemas and Types page](/learn/schema/). When querying a field that returned Union type, we included the `__typename` meta-field directly in a selection set to get the string value of the names of the different types returned by a search query. Let's look at this example again:
+[スキーマと型のページ](/learn/schema/)で、イントロスペクションの例をすでに見ました。Union型を返すフィールドをクエリする場合、検索クエリによって返される異なる型の名前の文字列値を取得するために、選択セットに`__typename`メタフィールドを直接含めました。この例をもう一度見てみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -25,13 +25,13 @@ query {
 }
 ```
 
-We didn't add the `__typename` field to our GraphQL API explicitly—the GraphQL specification says that it must be provided to clients by a GraphQL implementation. This field can be queried for any field with an Object, Interface, or Union type as the underlying output type.
+`__typename`フィールドをGraphQL APIに明示的に追加していませんでした—GraphQL仕様では、GraphQL実装によってクライアントに提供される必要があると述べています。このフィールドは、基盤となる出力型としてオブジェクト、インターフェース、またはUnion型を持つ任意のフィールドに対してクエリできます。
 
-## Schema introspection
+## スキーマのイントロスペクション
 
-Introspection can do more than provide type names in a query. If you designed the type system for a GraphQL API, then you'll likely already know what types are available. But if you didn't design it, you can ask GraphQL by querying the `__schema` field, which is always available on the `query` root operation type.
+イントロスペクションは、クエリで型名を提供する以上のことができます。GraphQL APIの型システムを設計した場合、利用可能な型をすでに知っている可能性があります。しかし、設計していない場合は、`query`ルート操作型で常に利用可能な`__schema`フィールドをクエリすることで、GraphQLに尋ねることができます。
 
-Let's do so now and ask what types are available in the Star Wars schema:
+それでは、スター・ウォーズスキーマで利用可能な型を尋ねてみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -44,13 +44,13 @@ query {
 }
 ```
 
-Wow, that's a lot of types! What are they? Let's group them:
+すごい、たくさんの型があります！それらは何でしょうか？グループ化してみましょう：
 
-- Types that we defined in our type system: `Query`, `Mutation`, `Character`, `Human`, `Episode`, `Droid`, `LengthUnit`, `FriendsConnection`, `FriendsEdge`, `PageInfo`, `Review`, `ReviewInput`, `Starship`, and `SearchResult`
-- Built-in scalars that the type system provided: `Boolean`, `Float`, `ID`, `Int`, and `String`
-- Types preceded with a double underscore that are part of the introspection system: `__Schema`, `__Type`, `__TypeKind`, `__Field`, `__InputValue`, `__EnumValue`, `__Directive`, and `__DirectiveLocation`
+- 型システムで定義した型：`Query`、`Mutation`、`Character`、`Human`、`Episode`、`Droid`、`LengthUnit`、`FriendsConnection`、`FriendsEdge`、`PageInfo`、`Review`、`ReviewInput`、`Starship`、および`SearchResult`
+- 型システムが提供した組み込みスカラー：`Boolean`、`Float`、`ID`、`Int`、および`String`
+- イントロスペクションシステムの一部である二重アンダースコアで始まる型：`__Schema`、`__Type`、`__TypeKind`、`__Field`、`__InputValue`、`__EnumValue`、`__Directive`、および`__DirectiveLocation`
 
-Now, let's try to figure out a good place to start exploring what queries are available. When we designed our type system, we specified what type all queries would start at; let's ask the introspection system about that:
+それでは、利用可能なクエリを探索するための良い出発点を見つけようとしましょう。型システムを設計したとき、すべてのクエリが開始する型を指定しました。イントロスペクションシステムにそれについて尋ねてみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -63,9 +63,9 @@ query {
 }
 ```
 
-The result matches what we said in the [type system section](/learn/schema/#type-system)—that the `Query` type is where we will start. Note that the naming here was just by convention; we could have named our `Query` type anything else, and it still would have been returned here had we specified it was the starting type for queries. Naming it `Query`, though, is a useful convention.
+結果は、[型システムセクション](/learn/schema/#type-system)で述べたことと一致しています—`Query`型が開始点であるということです。ここでの命名は慣例によるものであることに注意してください。`Query`型に別の名前を付けることもでき、クエリの開始型として指定していれば、ここで返されていたでしょう。ただし、`Query`と命名することは有用な慣例です。
 
-It is often useful to examine one specific type. Let's take a look at the `Droid` type:
+1つの特定の型を調べることは、しばしば有用です。`Droid`型を見てみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -76,7 +76,7 @@ query {
 }
 ```
 
-But what if we want to know more about Droid? For example, is it an Interface or Object type?
+しかし、Droidについてもっと知りたい場合はどうでしょうか？例えば、それはインターフェース型ですか、それともオブジェクト型ですか？
 
 ```graphql
 # { "graphiql": true }
@@ -88,7 +88,7 @@ query {
 }
 ```
 
-`kind` returns a `__TypeKind` Enum type, one of whose values is `OBJECT`. If we asked about `Character` instead we'd find that it is an Interface type:
+`kind`は`__TypeKind`列挙型を返し、その値の1つは`OBJECT`です。代わりに`Character`について尋ねた場合、それがインターフェース型であることがわかります：
 
 ```graphql
 # { "graphiql": true }
@@ -100,7 +100,7 @@ query {
 }
 ```
 
-It's useful for an Object type to know what fields are available, so let's ask the introspection system about `Droid`:
+オブジェクト型にとって、利用可能なフィールドを知ることは有用です。それでは、イントロスペクションシステムに`Droid`について尋ねてみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -118,11 +118,11 @@ query {
 }
 ```
 
-Those are the fields that we defined on `Droid`!
+これらは、`Droid`で定義したフィールドです！
 
-`id` looks a bit weird there, it has no name for the type. That's because it's a _wrapper type_ of kind `NON_NULL`. If we queried for `ofType` on that field's type, we would find the `ID` type there, telling us this is a non-null ID.
+`id`は少し奇妙に見えます。型の名前がありません。これは、`NON_NULL`の種類の_ラッパー型_であるためです。そのフィールドの型で`ofType`をクエリすると、そこに`ID`型が見つかり、これが非nullIDであることがわかります。
 
-Similarly, both `friends` and `appearsIn` have no name, since they are the `LIST` wrapper type. We can query for `ofType` on those types, which will tell us what types are inside the list:
+同様に、`friends`と`appearsIn`の両方に名前がありません。これらは`LIST`ラッパー型であるためです。それらの型で`ofType`をクエリすると、リスト内の型がわかります：
 
 ```graphql
 # { "graphiql": true }
@@ -144,7 +144,7 @@ query {
 }
 ```
 
-Let's end with a feature of the introspection system particularly useful for tooling; let's ask the system for documentation:
+ツールにとって特に有用なイントロスペクションシステムの機能で終わりましょう。システムにドキュメントを尋ねてみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -156,24 +156,24 @@ query {
 }
 ```
 
-As demonstrated above, we can access the documentation about the type system using introspection and create documentation browsers or rich IDE experiences.
+上記で示したように、イントロスペクションを使用して型システムに関するドキュメントにアクセスし、ドキュメントブラウザーやリッチなIDEエクスペリエンスを作成できます。
 
-This has just scratched the surface of the introspection system; we can query for Enum type values, what Interface types another type implements, and more. We can even introspect on the introspection system itself.
+これはイントロスペクションシステムの表面をかすめただけです。列挙型の値をクエリしたり、別の型が実装するインターフェース型をクエリしたり、さらに多くのことができます。イントロスペクションシステム自体をイントロスペクションすることもできます。
 
-To see an example of a specification-compliant GraphQL query introspection system implemented in code, you can view [src/type/introspection.ts](https://github.com/graphql/graphql-js/blob/e9b6b626f6f6aa379bb8f8c48df40d0c02a26082/src/type/introspection.ts) in the reference implementation.
+コードで実装された仕様に準拠したGraphQLクエリイントロスペクションシステムの例を見るには、リファレンス実装の[src/type/introspection.ts](https://github.com/graphql/graphql-js/blob/e9b6b626f6f6aa379bb8f8c48df40d0c02a26082/src/type/introspection.ts)を参照してください。
 
-## Introspection in production
+## 本番環境でのイントロスペクション
 
-Introspection is a useful feature of GraphQL, especially for client developers and tooling. However, for APIs intended only for your own applications, it’s typically not needed in production—required operations are usually baked into these applications at build time, making runtime introspection unnecessary.
+イントロスペクションは、GraphQLの有用な機能であり、特にクライアント開発者とツールにとって有用です。しかし、独自のアプリケーション専用のAPIの場合、本番環境では通常必要ありません—必要な操作は通常、ビルド時にこれらのアプリケーションに組み込まれるため、ランタイムイントロスペクションは不要です。
 
-Disabling introspection in production is common in order to reduce the API’s attack surface. This is often part of a broader API security strategy, which may also include authentication and authorization, operation safe-listing (or a range of alternative protections, such as depth-limiting, breadth-limiting, alias limits, cycle rejection, cost analysis, etc.), execution timeouts, and more.
+APIの攻撃面を減らすために、本番環境でイントロスペクションを無効にすることは一般的です。これは、より広範なAPIセキュリティ戦略の一部であることが多く、認証と認可、操作の安全リスト（または、深度制限、幅制限、エイリアス制限、サイクル拒否、コスト分析などの代替保護の範囲）、実行タイムアウトなども含まれる場合があります。
 
-## Next steps
+## 次のステップ
 
-To recap what we've learned about introspection:
+イントロスペクションについて学んだことをまとめると：
 
-- Type names can be queried in a field selection set for an Object, Interface, or Union type using the `__typename` meta-field
-- Information about the elements of a GraphQL schema can be queried using the `__schema` field on the `query` root operation type
-- Introspection is often disabled in production environments
+- 型名は、`__typename`メタフィールドを使用して、オブジェクト、インターフェース、またはUnion型のフィールド選択セットでクエリできます
+- GraphQLスキーマの要素に関する情報は、`query`ルート操作型の`__schema`フィールドを使用してクエリできます
+- イントロスペクションは、本番環境ではしばしば無効にされます
 
-Now that you've explored the GraphQL type system, how to query data from an API, and what the lifecycle of a request looks like, head over to the [Best Practices](/learn/best-practices/) section to learn more about running GraphQL in production.
+GraphQL型システム、APIからデータをクエリする方法、リクエストのライフサイクルがどのように見えるかを探索したので、[ベストプラクティス](/learn/best-practices/)セクションに進んで、本番環境でGraphQLを実行する方法について詳しく学んでください。

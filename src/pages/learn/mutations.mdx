@@ -1,24 +1,24 @@
 import { Callout } from "nextra/components"
 
-# Mutations
+# ミューテーション
 
-<p className="learn-subtitle">Learn how to modify data with a GraphQL server</p>
+<p className="learn-subtitle">GraphQLサーバーでデータを変更する方法を学ぶ</p>
 
-Most discussions of GraphQL focus on data fetching, but any complete data platform needs a way to modify server-side data as well.
+GraphQLの議論のほとんどはデータ取得に焦点を当てていますが、完全なデータプラットフォームには、サーバー側のデータを変更する方法も必要です。
 
-In REST, any request might cause some side-effects on the server, but by convention, it's suggested that one doesn't use `GET` requests to modify data. GraphQL is similar—technically any field resolver could be implemented to cause a data write—but the [GraphQL specification states](https://spec.graphql.org/draft/#sel-GANRNDAB6DBmMn6D) that "the resolution of fields other than top-level mutation fields must always be side effect-free and idempotent." Thus, for any spec-compliant GraphQL schemas, only the top-level fields in mutation operations are allowed to cause side effects.
+RESTでは、あらゆるリクエストがサーバー上で何らかの副作用を引き起こす可能性がありますが、慣例により、データを変更するために`GET`リクエストを使用しないことが推奨されています。GraphQLも同様です—技術的には、あらゆるフィールドリゾルバをデータ書き込みを引き起こすように実装できます—しかし、[GraphQL仕様では](https://spec.graphql.org/draft/#sel-GANRNDAB6DBmMn6D)、「最上位のミューテーションフィールド以外のフィールドの解決は、常に副作用がなく、べき等でなければならない」と述べています。したがって、仕様に準拠したGraphQLスキーマでは、ミューテーション操作の最上位フィールドのみが副作用を引き起こすことが許可されています。
 
-On this page, you'll learn how to use mutation operations to write data using GraphQL, and do so in a way that supports client use cases.
+このページでは、GraphQLを使用してミューテーション操作でデータを書き込む方法を学び、クライアントのユースケースをサポートする方法でそれを行います。
 
 <Callout type="info">
-All of the features of GraphQL operations that apply to queries also apply to mutations, so review the [Queries](/learn/queries/) page first before proceeding.
+クエリに適用されるGraphQL操作のすべての機能は、ミューテーションにも適用されるため、先に進む前に[クエリ](/learn/queries/)ページを確認してください。
 </Callout>
 
-## Add new data
+## 新しいデータの追加
 
-When creating new data with a REST API, you would send a `POST` request to a specific endpoint and include information about the entities to be created in the body of the request. GraphQL takes a different approach.
+REST APIで新しいデータを作成する場合、特定のエンドポイントに`POST`リクエストを送信し、リクエストの本文に作成するエンティティに関する情報を含めます。GraphQLは異なるアプローチを取ります。
 
-Let's look at an example mutation that's defined in our schema:
+スキーマで定義されているミューテーションの例を見てみましょう：
 
 ```graphql
 enum Episode {
@@ -37,11 +37,11 @@ type Mutation {
 }
 ```
 
-Like queries, mutation fields are added to one of the [root operation types](https://spec.graphql.org/draft/#sec-Root-Operation-Types) that provide an entry point to the API. In this case, we define the `createReview` field on the `Mutation` type. 
+クエリと同様に、ミューテーションフィールドは、APIへのエントリーポイントを提供する[ルート操作型](https://spec.graphql.org/draft/#sec-Root-Operation-Types)の1つに追加されます。この場合、`Mutation`型に`createReview`フィールドを定義します。
 
-Mutation fields can also accept arguments and you might notice that the `review` argument has an input type set to `ReviewInput`. This is known as [Input Object type](/learn/schema/#input-object-types), which allows us to pass in a structured object containing information the mutation can use instead of individual scalar values only.
+ミューテーションフィールドは引数も受け入れることができ、`review`引数が`ReviewInput`に設定された入力型を持っていることに気付くかもしれません。これは[入力オブジェクト型](/learn/schema/#input-object-types)として知られており、個々のスカラー値のみではなく、ミューテーションが使用できる情報を含む構造化オブジェクトを渡すことができます。
 
-As with queries, if the mutation field returns an Object type then you must specify a selection set of its fields in the operation:
+クエリと同様に、ミューテーションフィールドがオブジェクト型を返す場合、操作でそのフィールドの選択セットを指定する必要があります：
 
 ```graphql
 # { "graphiql": true, "variables": { "ep": "JEDI", "review": { "stars": 5, "commentary": "This is a great movie!" } } }
@@ -53,9 +53,9 @@ mutation CreateReviewForEpisode($ep: Episode!, $review: ReviewInput!) {
 }
 ```
 
-While the `createReview` field could be defined with any valid output type in the schema, it's conventional to specify an output type that relates to whatever is modified during the mutation—in this case, the `Review` type. This can be useful for clients that need to fetch the new state of an object after an update.
+`createReview`フィールドはスキーマ内の任意の有効な出力型で定義できますが、ミューテーション中に変更されるものに関連する出力型を指定するのが慣例です—この場合、`Review`型です。これは、更新後にオブジェクトの新しい状態を取得する必要があるクライアントにとって有用です。
 
-Recall that GraphQL is meant to work with your existing code and data, so the actual creation of the review is up to you when clients send this operation to the GraphQL server. A hypothetical function that writes the new review to a database during a `createReview` mutation might look like this:
+GraphQLは既存のコードとデータで動作することを意図しているため、レビューの実際の作成は、クライアントがこの操作をGraphQLサーバーに送信したときにあなた次第です。`createReview`ミューテーション中に新しいレビューをデータベースに書き込む仮想的な関数は、次のようになるかもしれません：
 
 ```js
 const Mutation = {
@@ -67,11 +67,11 @@ const Mutation = {
 };
 ```
 
-You can learn more about how GraphQL provides data for fields on the [Execution page](/learn/execution).
+フィールドにデータを提供する方法について詳しくは、[実行ページ](/learn/execution)をご覧ください。
 
-## Update existing data
+## 既存データの更新
 
-Similarly, we use mutations to update existing data. To change a human's name, we'll define a new mutation field and set that field's output type to the `Human` type so we can return the updated human's information to client after the server successfully writes the data:
+同様に、ミューテーションを使用して既存のデータを更新します。人間の名前を変更するために、新しいミューテーションフィールドを定義し、そのフィールドの出力型を`Human`型に設定して、サーバーがデータを正常に書き込んだ後、更新された人間の情報をクライアントに返すことができるようにします：
 
 ```graphql
 type Mutation {
@@ -79,7 +79,7 @@ type Mutation {
 }
 ```
 
-This operation will update Luke Skywalker's name:
+この操作は、ルーク・スカイウォーカーの名前を更新します：
 
 ```graphql
 # { "graphiql": true, "variables": { "id": "1000", "name": "Luke Starkiller" } }
@@ -91,13 +91,13 @@ mutation UpdateHumanName($id: ID!, $name: String!) {
 }
 ```
 
-## Purpose-built mutations
+## 目的別のミューテーション
 
-The previous example demonstrates an important distinction from REST. To update a human's properties using a REST API, you would likely send any updated data to a generalized endpoint for that resource using a `PATCH` request. With GraphQL, instead of simply creating an `updateHuman` mutation, you can define more specific mutation fields such as `updateHumanName`that are designed for the task at hand.
+前の例は、RESTとの重要な違いを示しています。REST APIを使用して人間のプロパティを更新する場合、`PATCH`リクエストを使用して、そのリソースの汎用エンドポイントに更新されたデータを送信する可能性があります。GraphQLでは、単に`updateHuman`ミューテーションを作成するのではなく、`updateHumanName`のような、手元のタスクのために設計されたより具体的なミューテーションフィールドを定義できます。
 
-Purpose-built mutation fields can help make a schema more expressive by allowing the input types for field arguments to be Non-Null types (a generic `updateHuman` mutation would likely need to accept many nullable arguments to handle different update scenarios). Defining this requirement in the schema also eliminates the need for other runtime logic to determine that the appropriate values were submitted to perform the client's desired write operation.
+目的別のミューテーションフィールドは、フィールド引数の入力型を非null型にできるようにすることで、スキーマをより表現力豊かにするのに役立ちます（汎用の`updateHuman`ミューテーションは、異なる更新シナリオを処理するために多くのnull許容引数を受け入れる必要がある可能性があります）。スキーマでこの要件を定義することで、クライアントの望む書き込み操作を実行するために適切な値が送信されたことを判断するための他のランタイムロジックの必要性も排除されます。
 
-GraphQL also allows us to express relationships between data that would be more difficult to model semantically with a basic CRUD-style request. For example, a user may wish to save a personal rating for a film. While the rating belongs to the user and doesn't modify anything related to a film itself, we can ergonomically associate it with a `Film` object as follows:
+GraphQLはまた、基本的なCRUDスタイルのリクエストでは意味的にモデル化するのがより困難なデータ間の関係を表現することを可能にします。例えば、ユーザーが映画の個人的な評価を保存したい場合があります。評価はユーザーに属し、映画自体に関連するものを変更しませんが、次のように`Film`オブジェクトに人間工学的に関連付けることができます：
 
 ```graphql
 # { "graphiql": true, "variables": { "episode": "EMPIRE", "rating": "THUMBS_UP" } }
@@ -109,11 +109,11 @@ mutation RateFilm($episode: Episode!, $rating: FilmRating!) {
 }
 ```
 
-As a general rule, a GraphQL API should be designed to help clients get and modify data in a way that makes sense for them, so the fields defined in a schema should be informed by those use cases.
+一般的なルールとして、GraphQL APIは、クライアントにとって意味のある方法でデータを取得および変更するのに役立つように設計されるべきであるため、スキーマで定義されるフィールドは、それらのユースケースに基づいて決定されるべきです。
 
-## Remove existing data
+## 既存データの削除
 
-Just as we can send a `DELETE` request to delete a resource with a REST API, we can use mutations to delete some existing data as well by defining another field on the `Mutation` type:
+REST APIでリソースを削除するために`DELETE`リクエストを送信できるのと同様に、`Mutation`型に別のフィールドを定義することで、ミューテーションを使用して既存のデータを削除することもできます：
 
 ```graphql
 type Mutation {
@@ -121,7 +121,7 @@ type Mutation {
 }
 ```
 
-Here's an example of the new mutation field:
+新しいミューテーションフィールドの例を次に示します：
 
 ```graphql
 # { "graphiql": true, "variables": { "id": "3003" } }
@@ -130,15 +130,15 @@ mutation DeleteStarship($id: ID!) {
 }
 ```
 
-As with mutations that create and update data, the GraphQL specification doesn't indicate what should be returned from a successful mutation operation that deletes data, but we do have to specify some type as an output type for the field in the schema. Commonly, the deleted entity's ID or a payload object containing data about the entity will be used to indicate that the operation was successful.
+データを作成および更新するミューテーションと同様に、GraphQL仕様は、データを削除する成功したミューテーション操作から何を返すべきかを示していませんが、スキーマ内のフィールドの出力型として何らかの型を指定する必要があります。一般的に、削除されたエンティティのIDまたはエンティティに関するデータを含むペイロードオブジェクトが、操作が成功したことを示すために使用されます。
 
-## Multiple fields in mutations
+## ミューテーション内の複数のフィールド
 
-A mutation can contain multiple fields, just like a query. There's one important distinction between queries and mutations, other than the name:
+ミューテーションは、クエリと同様に、複数のフィールドを含むことができます。名前以外に、クエリとミューテーションの間には1つの重要な違いがあります：
 
-**While query fields are executed in parallel, mutation fields run in series.**
+**クエリフィールドは並行して実行されますが、ミューテーションフィールドは順次実行されます。**
 
-Let's look at an example:
+例を見てみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -148,16 +148,16 @@ mutation {
 }
 ```
 
-[Serial execution](https://spec.graphql.org/draft/#sec-Normal-and-Serial-Execution) of these top-level fields means that if we send two `deleteStarship` mutations in one request, the first is guaranteed to finish before the second begins, ensuring that we don't end up in a race condition with ourselves.
+これらの最上位フィールドの[順次実行](https://spec.graphql.org/draft/#sec-Normal-and-Serial-Execution)は、1つのリクエストで2つの`deleteStarship`ミューテーションを送信する場合、最初のミューテーションが2番目のミューテーションが開始する前に完了することが保証されることを意味し、自分自身との競合状態に陥らないようにします。
 
-Note that serial execution of top-level `Mutation` fields differs from the notion of a database transaction. Some mutation fields may resolve successfully while others return errors, and there's no way for GraphQL to revert the successful portions of the operation when this happens. So in the previous example, if the first starship is removed successfully but the `secondShip` field raises an error, there is no built-in way for GraphQL to revert the execution of the `firstShip` field afterward.
+最上位の`Mutation`フィールドの順次実行は、データベーストランザクションの概念とは異なることに注意してください。一部のミューテーションフィールドは正常に解決される場合がありますが、他のフィールドはエラーを返す場合があり、これが発生したときにGraphQLが操作の成功した部分を元に戻す方法はありません。したがって、前の例では、最初の宇宙船が正常に削除されたが、`secondShip`フィールドがエラーを発生させた場合、GraphQLがその後`firstShip`フィールドの実行を元に戻すための組み込み方法はありません。
 
-## Next steps
+## 次のステップ
 
-To recap what we've learned about mutations:
+ミューテーションについて学んだことをまとめると：
 
-- Clients can create, update, and delete data using a GraphQL API, depending on what capabilities are exposed in the schema
-- Depending on client requirements, mutations can be designed to accommodate granular use cases for write operations 
-- Top-level fields on the `Mutation` type will execute serially, unlike fields on other types which are often executed in parallel
+- クライアントは、スキーマで公開されている機能に応じて、GraphQL APIを使用してデータを作成、更新、および削除できます
+- クライアントの要件に応じて、ミューテーションは書き込み操作の細かいユースケースに対応するように設計できます
+- `Mutation`型の最上位フィールドは、他の型のフィールドとは異なり、並行して実行されることが多いのに対し、順次実行されます
 
-Now that we know how to use a GraphQL server to read and write data, we're ready to learn how to fetch data in real time using [subscriptions](/learn/subscriptions). You may also wish to learn more about how GraphQL queries and mutations can be [served over HTTP](/learn/serving-over-http/).
+GraphQLサーバーを使用してデータを読み書きする方法がわかったので、[サブスクリプション](/learn/subscriptions)を使用してリアルタイムでデータを取得する方法を学ぶ準備ができました。GraphQLクエリとミューテーションを[HTTP経由で提供する](/learn/serving-over-http/)方法についても詳しく学ぶことをお勧めします。

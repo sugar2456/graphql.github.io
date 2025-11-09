@@ -1,16 +1,16 @@
-# Caching
+# キャッシング
 
-<p className="learn-subtitle">Provide Object Identifiers so clients can build rich caches</p>
+<p className="learn-subtitle">オブジェクト識別子を提供して、クライアントがリッチなキャッシュを構築できるようにする</p>
 
-In an endpoint-based API, clients can use [HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching) to avoid refetching resources and to identify when two resources are the same. The URL in these APIs is a _globally unique identifier_ that the client can leverage to build a cache.
+エンドポイントベースのAPIでは、クライアントは[HTTPキャッシング](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)を使用して、リソースの再取得を回避し、2つのリソースが同じであることを識別できます。これらのAPIのURLは、クライアントがキャッシュを構築するために活用できる_グローバルに一意の識別子_です。
 
-In GraphQL, there's no URL-like primitive that provides this globally unique identifier for a given object. Hence, it's a best practice for the API to expose such an identifier for clients to use as a prerequisite for certain types of caching. 
+GraphQLでは、特定のオブジェクトに対してこのグローバルに一意の識別子を提供するURLのようなプリミティブはありません。したがって、APIがそのような識別子を公開して、クライアントが特定の種類のキャッシングの前提条件として使用できるようにすることは、ベストプラクティスです。
 
-## Globally unique IDs
+## グローバルに一意のID
 
-### Standardize how objects are identified in a schema
+### スキーマでオブジェクトを識別する方法を標準化する
 
-One possible pattern for this is reserving a field, like `id`, to be a globally unique identifier. The example schema used throughout these docs uses this approach:
+これの1つの可能なパターンは、`id`のようなフィールドをグローバルに一意の識別子として予約することです。このドキュメント全体で使用されているサンプルスキーマは、このアプローチを使用しています：
 
 ```graphql
 # { "graphiql": true }
@@ -30,29 +30,29 @@ query {
 }
 ```
 
-This is a powerful tool for client developers. In the same way that the URLs of a resource-based API provide a globally unique key, the `id` field in this system provides a globally unique key.
+これはクライアント開発者にとって強力なツールです。リソースベースのAPIのURLがグローバルに一意のキーを提供するのと同じように、このシステムの`id`フィールドはグローバルに一意のキーを提供します。
 
-If the backend uses something like UUIDs for identifiers, then exposing this globally unique ID may be very straightforward! If the backend doesn't have a globally unique ID for every object already, the GraphQL layer might have to construct one. Oftentimes, that's as simple as appending the name of the type to the ID and using that as the identifier. The server might then make that ID opaque by base64-encoding it.
+バックエンドが識別子にUUIDのようなものを使用している場合、このグローバルに一意のIDを公開することは非常に簡単かもしれません！バックエンドがすべてのオブジェクトに対して既にグローバルに一意のIDを持っていない場合、GraphQL層がそれを構築する必要があるかもしれません。多くの場合、型の名前をIDに追加して、それを識別子として使用するのと同じくらい簡単です。サーバーはその後、base64エンコードすることでそのIDを不透明にすることができます。
 
-Optionally, this ID can then be used to work with the `node` pattern when using [global object identification](/learn/global-object-identification).
+オプションとして、このIDは[グローバルオブジェクト識別](/learn/global-object-identification)を使用する際に`node`パターンで作業するために使用できます。
 
-### Compatibility with existing APIs
+### 既存のAPIとの互換性
 
-One concern with using the `id` field for this purpose is how a client using the GraphQL API would work with existing APIs. For example, if our existing API accepted a type-specific ID, but our GraphQL API uses globally unique IDs, then using both at once can be tricky.
+この目的で`id`フィールドを使用することに関する1つの懸念は、GraphQL APIを使用するクライアントが既存のAPIとどのように連携するかです。例えば、既存のAPIが型固有のIDを受け入れるが、GraphQL APIがグローバルに一意のIDを使用する場合、両方を同時に使用するのは難しい場合があります。
 
-In these cases, the GraphQL API can expose the previous API's IDs in a separate field. This gives us the best of both worlds:
+このような場合、GraphQL APIは以前のAPIのIDを別のフィールドで公開できます。これにより、両方の利点を得ることができます：
 
-- GraphQL clients can continue to rely on a consistent mechanism to get a globally unique ID.
-- Clients that need to work with our previous API can also fetch `previousApiId` from the object, and use that.
+- GraphQLクライアントは、グローバルに一意のIDを取得するための一貫したメカニズムに依存し続けることができます。
+- 以前のAPIと連携する必要があるクライアントは、オブジェクトから`previousApiId`を取得して、それを使用することもできます。
 
-### Alternatives
+### 代替案
 
-While globally unique IDs have proven to be a powerful pattern in the past, they are not the only pattern that can be used, nor are they right for every situation. The critical functionality that the client needs is the ability to derive a globally unique identifier for their caching. While having the server derive that ID simplifies the client, the client can also derive the identifier. This could be as simple as combining the type of the object (queried with `__typename`) with some type-unique identifier.
+グローバルに一意のIDは過去に強力なパターンであることが証明されていますが、使用できる唯一のパターンではなく、すべての状況に適しているわけでもありません。クライアントが必要とする重要な機能は、キャッシングのためにグローバルに一意の識別子を導出する能力です。サーバーがそのIDを導出することでクライアントが簡素化されますが、クライアントも識別子を導出できます。これは、オブジェクトの型（`__typename`でクエリされる）といくつかの型固有の識別子を組み合わせるのと同じくらい簡単です。
 
-Additionally, if replacing an existing API with a GraphQL API, then it may be confusing if all of the fields in GraphQL are the same **except** `id`, which changed to be globally unique. This would be another reason why one might choose not to use `id` as the globally unique field.
+さらに、既存のAPIをGraphQL APIに置き換える場合、GraphQLのすべてのフィールドが同じであるが、`id`だけがグローバルに一意に変更された場合、混乱を招く可能性があります。これが、`id`をグローバルに一意のフィールドとして使用しないことを選択するもう1つの理由です。
 
-## Recap
+## まとめ
 
-To recap these recommendations for using caching with GraphQL APIs:
+GraphQL APIでキャッシングを使用するためのこれらの推奨事項をまとめると：
 
-- Defining a globally unique ID field for an Object type can facilitate various types of caching
+- オブジェクト型に対してグローバルに一意のIDフィールドを定義することで、さまざまな種類のキャッシングを促進できます

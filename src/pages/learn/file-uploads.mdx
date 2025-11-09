@@ -1,85 +1,68 @@
-# Handling File Uploads in GraphQL
+# GraphQLでのファイルアップロードの処理
 
-GraphQL was not designed with file uploads in mind. While it’s technically possible to implement them, doing so requires 
-extending the transport layer and introduces several risks, both in security and reliability. 
+GraphQLは、ファイルアップロードを念頭に置いて設計されていません。技術的には実装可能ですが、トランスポート層を拡張する必要があり、セキュリティと信頼性の両方でいくつかのリスクが導入されます。
 
-This guide explains why file uploads via GraphQL are problematic and presents safer alternatives.
+このガイドでは、GraphQL経由でのファイルアップロードが問題となる理由を説明し、より安全な代替案を提示します。
 
-## Why uploads are challenging
+## アップロードが困難な理由
 
-The [GraphQL specification](https://spec.graphql.org/draft/) is transport-agnostic and serialization-agnostic (though HTTP and JSON are the most prevalent combination seen in the community).
-GraphQL was designed to work with relatively small requests from clients, and was not designed with handling binary data in mind.
+[GraphQL仕様](https://spec.graphql.org/draft/)は、トランスポートに依存せず、シリアル化にも依存しません（ただし、HTTPとJSONはコミュニティで最も一般的な組み合わせです）。GraphQLは、クライアントからの比較的小さなリクエストで動作するように設計されており、バイナリデータの処理を念頭に置いて設計されていません。
 
-File uploads, by contrast, typically handle binary data such as images and PDFs &mdash; something many encodings, including JSON, cannot handle directly.
-One option is to encode within our encoding (e.g. use a base64-encoded string within our JSON), but this is inefficient and is not suitable for larger binary files as it does not support streamed processing easily.
-Instead, `multipart/form-data` is a common choice for transferring binary data; but it is not without its own set of complexities.
+対照的に、ファイルアップロードは通常、画像やPDFなどのバイナリデータを処理します—JSONを含む多くのエンコーディングが直接処理できないものです。1つのオプションは、エンコーディング内でエンコードすることです（例：JSON内でbase64エンコードされた文字列を使用する）が、これは非効率的であり、ストリーミング処理を簡単にサポートしないため、大きなバイナリファイルには適していません。代わりに、`multipart/form-data`はバイナリデータを転送するための一般的な選択肢ですが、それ自体の複雑さのセットがないわけではありません。
 
-Supporting uploads over GraphQL usually involves adopting community conventions, the most prevalent of which is the 
-[GraphQL multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec).
-This specification has been successfully implemented in many languages and frameworks, but users
-implementing it must pay very close attention to ensure that they do not introduce
-security or reliability concerns.
+GraphQL経由でのアップロードのサポートには、通常、コミュニティの慣行を採用することが含まれます。その中で最も一般的なのは、[GraphQL multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec)です。この仕様は多くの言語とフレームワークで正常に実装されていますが、実装するユーザーは、セキュリティや信頼性の問題を導入しないように細心の注意を払う必要があります。
 
-## Risks to be aware of
+## 認識すべきリスク
 
-### Memory exhaustion from repeated variables
+### 繰り返し変数によるメモリ枯渇
 
-GraphQL operations allow the same variable to be referenced multiple times. If a file upload variable is reused, the underlying 
-stream may be read multiple times or prematurely drained. This can result in incorrect behavior or memory exhaustion.
+GraphQL操作では、同じ変数を複数回参照できます。ファイルアップロード変数が再利用される場合、基盤となるストリームが複数回読み取られるか、早期に枯渇する可能性があります。これは、不正な動作やメモリ枯渇を引き起こす可能性があります。
 
-A safe practice is to use trusted documents or a validation rule to ensure each upload variable is referenced exactly once.
+安全な慣行は、信頼できるドキュメントまたは検証ルールを使用して、各アップロード変数が正確に1回だけ参照されることを保証することです。
 
-### Stream leaks on failed operations
+### 失敗した操作でのストリームリーク
 
-GraphQL executes in phases: validation, then execution. If validation fails or an authorization check prematurely terminates execution, uploaded 
-file streams may never be consumed. If your server buffers or retains these streams, it can cause memory leaks.
+GraphQLは段階的に実行されます：検証、その後実行。検証が失敗した場合、または認可チェックが実行を早期に終了した場合、アップロードされたファイルストリームが消費されない可能性があります。サーバーがこれらのストリームをバッファリングまたは保持する場合、メモリリークを引き起こす可能性があります。
 
-To avoid this, ensure that all streams are terminated when the request finishes, whether or not they were consumed in resolvers.
-An alternative to consider is writing incoming files to temporary storage immediately, and passing references (like filenames) into 
-resolvers. Ensure this storage is cleaned up after request completion, regardless of success or failure.
+これを回避するには、リゾルバで消費されたかどうかに関係なく、リクエストが終了したときにすべてのストリームが終了されることを確認します。考慮すべき代替案は、受信ファイルを一時ストレージにすぐに書き込み、リゾルバに参照（ファイル名など）を渡すことです。成功または失敗に関係なく、リクエスト完了後にこのストレージがクリーンアップされることを確認してください。
 
-### Cross-Site Request Forgery (CSRF)
+### クロスサイトリクエストフォージェリ（CSRF）
 
-`multipart/form-data` is classified as a “simple” request in the CORS spec and does not trigger a preflight check. Without 
-explicit CSRF protection, your GraphQL server may unknowingly accept uploads from malicious origins.
+`multipart/form-data`は、CORS仕様で「シンプル」なリクエストとして分類され、プリフライトチェックをトリガーしません。明示的なCSRF保護がない場合、GraphQLサーバーは悪意のあるオリジンからのアップロードを気づかずに受け入れる可能性があります。
 
-### Oversized or excess payloads
+### 過大または過剰なペイロード
 
-Attackers may submit very large uploads or include extraneous files under unused variable names. Servers that accept and 
-buffer these can be overwhelmed.
+攻撃者は、非常に大きなアップロードを送信したり、未使用の変数名の下に余分なファイルを含めたりする可能性があります。これらを受け入れ、バッファリングするサーバーは圧倒される可能性があります。
 
-Enforce request size caps and reject any files not explicitly referenced in the map field of the multipart payload.
+リクエストサイズの上限を強制し、multipartペイロードのmapフィールドで明示的に参照されていないファイルを拒否します。
 
-### Untrusted file metadata
+### 信頼できないファイルメタデータ
 
-Information such as file names, MIME types, and contents should never be trusted. To mitigate risk:
+ファイル名、MIMEタイプ、コンテンツなどの情報は、決して信頼すべきではありません。リスクを軽減するには：
 
-- Sanitize filenames to prevent path traversal or injection issues.
-- Sniff file types independently of declared MIME types, and reject mismatches.
-- Validate file contents. Be aware of format-specific exploits like zip bombs or maliciously crafted PDFs.
+- パストラバーサルまたはインジェクションの問題を防ぐためにファイル名をサニタイズします。
+- 宣言されたMIMEタイプとは独立してファイルタイプを検出し、不一致を拒否します。
+- ファイルコンテンツを検証します。zip爆弾や悪意を持って作成されたPDFなどの形式固有のエクスプロイトに注意してください。
 
-## Recommendation: Use signed URLs
+## 推奨事項：署名付きURLを使用する
 
-The most secure and scalable approach is to avoid uploading files through GraphQL entirely. Instead:
+最も安全でスケーラブルなアプローチは、GraphQL経由でのファイルアップロードを完全に回避することです。代わりに：
 
-1. Use a GraphQL mutation to request a signed upload URL from your storage provider (e.g., Amazon S3).
-2. Upload the file directly from the client using that URL.
-3. Submit a second mutation to associate the uploaded file with your application’s data (or use an automatically triggered process, such as Amazon Lambda, to do the same).
+1. GraphQLミューテーションを使用して、ストレージプロバイダー（例：Amazon S3）から署名付きアップロードURLをリクエストします。
+2. そのURLを使用して、クライアントから直接ファイルをアップロードします。
+3. アップロードされたファイルをアプリケーションのデータに関連付けるために、2番目のミューテーションを送信します（または、Amazon Lambdaなどの自動的にトリガーされるプロセスを使用して同じことを行います）。
 
-You should ensure that these file uploads are only retained for a short period such that an attacker completing only steps 1 and 2 will not exhaust your storage.
-When processing the file upload (step 3), the file should be moved to more permanent storage as appropriate.
+攻撃者がステップ1と2のみを完了した場合にストレージが枯渇しないように、これらのファイルアップロードが短期間のみ保持されることを確認する必要があります。ファイルアップロードを処理する際（ステップ3）、ファイルは適切に永続ストレージに移動する必要があります。
 
-This separates responsibilities cleanly, protects your server from binary data handling, and aligns with best practices for 
-modern web architecture.
+これは責任を明確に分離し、サーバーをバイナリデータの処理から保護し、モダンなWebアーキテクチャのベストプラクティスに沿っています。
 
-## If you still choose to support uploads
+## それでもアップロードをサポートすることを選択する場合
 
-If your application truly requires file uploads through GraphQL, proceed with caution. At a minimum, you should:
+アプリケーションがGraphQL経由でのファイルアップロードを真に必要とする場合、注意して進めてください。最低限、以下を行う必要があります：
 
-- Use a well-maintained implementation of the 
-[GraphQL multipart request spec](https://github.com/jaydenseric/graphql-multipart-request-spec).
-- Enforce a rule that upload variables are only referenced once.
-- Stream uploads to disk or cloud storage—avoid buffering them in memory.
-- Ensure that streams are always terminated when the request ends, whether or not they were consumed.
-- Apply strict request size limits and validate all fields.
-- Treat file names, types, and contents as untrusted data.
+- [GraphQL multipart request spec](https://github.com/jaydenseric/graphql-multipart-request-spec)の適切に維持されている実装を使用します。
+- アップロード変数が1回だけ参照されるルールを強制します。
+- アップロードをディスクまたはクラウドストレージにストリーミングします—メモリにバッファリングしないでください。
+- 消費されたかどうかに関係なく、リクエストが終了したときにストリームが常に終了されることを確認します。
+- 厳格なリクエストサイズ制限を適用し、すべてのフィールドを検証します。
+- ファイル名、タイプ、コンテンツを信頼できないデータとして扱います。

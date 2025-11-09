@@ -1,19 +1,19 @@
-# Schema Design
+# スキーマ設計
 
-<p className="learn-subtitle">Design and evolve a type system over time without versions</p>
+<p className="learn-subtitle">バージョンなしで型システムを時間をかけて設計し、進化させる</p>
 
-## Versioning
+## バージョニング
 
-While there's nothing that prevents a GraphQL service from being versioned just like any other API, GraphQL takes a strong opinion on avoiding versioning by providing the tools for the continuous evolution of a GraphQL schema.
+GraphQLサービスが他のAPIと同様にバージョン管理されることを妨げるものはありませんが、GraphQLは、GraphQLスキーマの継続的な進化のためのツールを提供することで、バージョニングを回避することについて強い意見を持っています。
 
-Why do most APIs version? When there's limited control over the data that's returned from an API endpoint, _any change_ can be considered a breaking change, and breaking changes require a new version. If adding new features to an API requires a new version, then a tradeoff emerges between releasing often and having many incremental versions versus the understandability and maintainability of the API.
+なぜほとんどのAPIはバージョン管理するのでしょうか？APIエンドポイントから返されるデータを制御する能力が限られている場合、_あらゆる変更_が破壊的変更と見なされる可能性があり、破壊的変更には新しいバージョンが必要です。APIに新機能を追加するために新しいバージョンが必要な場合、頻繁にリリースして多くの増分バージョンを持つことと、APIの理解しやすさと保守性の間でトレードオフが生じます。
 
-In contrast, GraphQL only returns the data that's explicitly requested, so new capabilities can be added via new types or new fields on existing types without creating a breaking change. This has led to a common practice of always avoiding breaking changes and serving a versionless API.
+対照的に、GraphQLは明示的にリクエストされたデータのみを返すため、新しい型または既存の型の新しいフィールドを介して新機能を追加でき、破壊的変更を作成することなく追加できます。これにより、常に破壊的変更を回避し、バージョンなしのAPIを提供するという一般的な慣行が生まれました。
 
-## Nullability
+## Null許容性
 
-Most type systems which recognise "null" provide both the common type and the _nullable_ version of that type, whereby default types do not include "null" unless explicitly declared. However, in a GraphQL type system, every field is _nullable_ by default. This is because there are many things that can go awry in a networked service backed by databases and other services. A database could go down, an asynchronous action could fail, an exception could be thrown. Beyond simply system failures, authorization can often be granular, where individual fields within a request can have different authorization rules.
+「null」を認識するほとんどの型システムは、共通型とその型の_null許容_バージョンの両方を提供します。デフォルト型は、明示的に宣言されない限り「null」を含みません。しかし、GraphQL型システムでは、すべてのフィールドはデフォルトで_null許容_です。これは、データベースやその他のサービスによってサポートされるネットワークサービスでは、多くのことがうまくいかない可能性があるためです。データベースがダウンする可能性があり、非同期アクションが失敗する可能性があり、例外がスローされる可能性があります。単純なシステム障害を超えて、認可はしばしば細かく、リクエスト内の個々のフィールドが異なる認可ルールを持つことができます。
 
-By defaulting every field to _nullable_, any of these reasons may result in just that field returned "null" rather than having a complete failure for the request. Instead, GraphQL provides [non-null](/learn/schema/#lists-and-non-null) variants of types which make a guarantee to clients that if requested, the field will never return "null". Instead, if an error occurs, the previous parent field will be "null" instead.
+すべてのフィールドを_null許容_にデフォルト設定することで、これらの理由のいずれかが、リクエストの完全な失敗ではなく、そのフィールドが「null」を返すだけになる可能性があります。代わりに、GraphQLは型の[非null](/learn/schema/#lists-and-non-null)バリアントを提供し、クライアントに、リクエストされた場合、フィールドが「null」を返すことはないという保証を提供します。代わりに、エラーが発生した場合、前の親フィールドが「null」になります。
 
-When designing a GraphQL schema, it's important to keep in mind all the problems that could go wrong and if "null" is an appropriate value for a failed field. Typically it is, but occasionally, it's not. In those cases, use non-null types to make that guarantee.
+GraphQLスキーマを設計する際は、うまくいかない可能性のあるすべての問題と、失敗したフィールドに対して「null」が適切な値かどうかを心に留めておくことが重要です。通常は適切ですが、時にはそうではありません。そのような場合、非null型を使用してその保証を行います。

@@ -1,62 +1,62 @@
 import { Cards } from '../../components/cards'
 
-# GraphQL Best Practices
+# GraphQLベストプラクティス
 
-The GraphQL specification is intentionally silent on a handful of important issues facing APIs such as dealing with the network, authorization, and pagination. This doesn't mean that there aren't solutions for these issues when using GraphQL, just that they're outside the description about what GraphQL _is_ and instead just common practice.
+GraphQL仕様は、ネットワークの処理、認可、ページネーションなど、APIが直面する重要な問題のいくつかについて意図的に沈黙しています。これは、GraphQLを使用する際にこれらの問題に対する解決策がないという意味ではなく、それらがGraphQLが_何であるか_の説明の範囲外であり、単に一般的な慣行であることを意味します。
 
-The articles in this section should not be taken as gospel, and in some cases may rightfully be ignored in favor of some other approach. Some articles introduce some of the philosophy developed within Facebook around designing and deploying GraphQL services, while others are more tactical suggestions for solving common problems like serving over HTTP and performing authorization.
+このセクションの記事は絶対的なものとして受け取るべきではなく、場合によっては他のアプローチを優先して無視することも正当化されます。一部の記事では、Facebook内で開発されたGraphQLサービスの設計とデプロイに関する哲学の一部を紹介していますが、他の記事では、HTTP経由での提供や認可の実行など、一般的な問題を解決するためのより実践的な提案を提供しています。
 
 <Cards
   items={[
     {
-      title: "Thinking in Graphs",
+      title: "グラフとして考える",
       link: "/learn/thinking-in-graphs/",
-      description: "Model your business domain as a graph",
+      description: "ビジネスドメインをグラフとしてモデル化する",
     },
     {
-      title: "Serving over HTTP",
+      title: "HTTP経由での提供",
       link: "/learn/serving-over-http/",
-      description: "Handle GraphQL requests on HTTP servers",
+      description: "HTTPサーバーでGraphQLリクエストを処理する",
     },
     {
-      title: "Authorization",
+      title: "認可",
       link: "/learn/authorization/",
-      description: "Delegate authorization logic to the business logic layer",
+      description: "認可ロジックをビジネスロジック層に委譲する",
     },
     {
-      title: "Pagination",
+      title: "ページネーション",
       link: "/learn/pagination/",
-      description: "Allow clients to traverse lists of objects with a consistent field pagination model",
+      description: "一貫したフィールドページネーションモデルでクライアントがオブジェクトのリストをトラバースできるようにする",
     },
     {
-      title: "Schema Design",
+      title: "スキーマ設計",
       link: "/learn/schema-design/",
-      description: "Design and evolve a type system over time without versions",
+      description: "バージョンなしで型システムを時間をかけて設計し、進化させる",
     },
     {
-      title: "Global Object Identification",
+      title: "グローバルオブジェクト識別",
       link: "/learn/global-object-identification/",
-      description: "Consistent object access enables simple caching and object lookups",
+      description: "一貫したオブジェクトアクセスにより、シンプルなキャッシングとオブジェクトルックアップが可能になる",
         },
     {
-      title: "Caching",
+      title: "キャッシング",
       link: "/learn/caching/",
-      description: "Provide Object Identifiers so clients can build rich caches",
+      description: "オブジェクト識別子を提供して、クライアントがリッチなキャッシュを構築できるようにする",
     },
     {
-      title: "Performance",
+      title: "パフォーマンス",
       link: "/learn/performance/",
-      description: "Optimize the execution and delivery of GraphQL responses",
+      description: "GraphQLレスポンスの実行と配信を最適化する",
     },
     {
-      title: "Security",
+      title: "セキュリティ",
       link: "/learn/security/",
-      description: "Protect GraphQL APIs from malicious operations",
+      description: "GraphQL APIを悪意のある操作から保護する",
     },
     {
-      title: "Common Errors",
+      title: "一般的なエラー",
       link: "/learn/debug-errors/",
-      description: "Learn about common `graphql-http` errors and how to debug them.",
+      description: "一般的な`graphql-http`エラーとそのデバッグ方法について学ぶ",
     }
   ]}
 />

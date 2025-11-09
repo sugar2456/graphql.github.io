@@ -1,43 +1,43 @@
-# Performance
+# パフォーマンス
 
-<p className="learn-subtitle">Optimize the execution and delivery of GraphQL responses</p>
+<p className="learn-subtitle">GraphQLレスポンスの実行と配信を最適化する</p>
 
-At first glance, GraphQL requests may seem challenging to cache given that the API is served through a single endpoint and you may not know in advance what fields a client will include in an operation.
+一見すると、GraphQLリクエストは、APIが単一のエンドポイント経由で提供され、クライアントが操作に含めるフィールドを事前に知らない可能性があるため、キャッシュが困難に見えるかもしれません。
 
-In practice, however, GraphQL is as cacheable as any API that enables parameterized requests, such as a REST API that allows clients to specify different query parameters for a particular endpoint. There are many ways to optimize GraphQL requests on the client and server sides, as well as in the transport layer, and different GraphQL server and client libraries will often have common caching features built directly into them.
+しかし、実際には、GraphQLは、特定のエンドポイントに対してクライアントが異なるクエリパラメータを指定できるREST APIなど、パラメータ化されたリクエストを可能にする任意のAPIと同じくらいキャッシュ可能です。クライアント側とサーバー側、およびトランスポート層でGraphQLリクエストを最適化する方法は多数あり、異なるGraphQLサーバーとクライアントライブラリには、一般的なキャッシング機能が直接組み込まれていることがよくあります。
 
-On this page, we'll explore several different tactics that can be leveraged in GraphQL clients and servers to optimize how data is fetched from the API.
+このページでは、APIからデータを取得する方法を最適化するために、GraphQLクライアントとサーバーで活用できるいくつかの異なる戦術について説明します。
 
-## Client-side caching
+## クライアント側のキャッシング
 
-There is a range of client-side caching strategies that GraphQL clients may implement to help not only with performance but also to ensure that you render a consistent and responsive interface to your users. [Read more about client-side caching](/learn/caching).
+GraphQLクライアントが実装できるクライアント側のキャッシング戦略の範囲があり、パフォーマンスだけでなく、ユーザーに一貫性があり応答性の高いインターフェースをレンダリングすることを保証するのにも役立ちます。[クライアント側のキャッシングについて詳しく読む](/learn/caching)。
 
-## `GET` requests for queries
+## クエリの`GET`リクエスト
 
-GraphQL implementations that adhere to the [GraphQL over HTTP specification](https://graphql.github.io/graphql-over-http/draft/) will support the `POST` HTTP method by default, but may also support `GET` requests for query operations.
+[GraphQL over HTTP仕様](https://graphql.github.io/graphql-over-http/draft/)に準拠するGraphQL実装は、デフォルトで`POST` HTTPメソッドをサポートしますが、クエリ操作に対して`GET`リクエストもサポートする場合があります。
 
-Using `GET` can improve query performance because requests made with this HTTP method are typically considered cacheable by default and can help facilitate HTTP caching or the use of a content delivery network (CDN) when caching-related headers are provided in the server response. 
+`GET`を使用すると、このHTTPメソッドで行われたリクエストがデフォルトでキャッシュ可能と見なされるため、クエリのパフォーマンスを向上させることができ、サーバーレスポンスにキャッシュ関連のヘッダーが提供されている場合、HTTPキャッシングまたはコンテンツ配信ネットワーク（CDN）の使用を促進できます。
 
-However, because browsers and CDNs impose size limits on URLs, it may not be possible to send a large document for complex operations in the query string of the URL. Using _persisted queries_, either in the form of _trusted documents_ or _automatic persisted queries_, will allow the client to send a hash of the query instead, and the server can look up the full version of the document by looking up the hash in a server-side store before validating and executing the operation.
+ただし、ブラウザとCDNはURLにサイズ制限を課すため、複雑な操作に対してURLのクエリ文字列で大きなドキュメントを送信することは不可能な場合があります。_persisted queries_（_trusted documents_または_automatic persisted queries_の形式）を使用すると、クライアントはクエリのハッシュを送信でき、サーバーは操作を検証して実行する前に、サーバー側ストアでハッシュを検索してドキュメントの完全版を検索できます。
 
-Sending hashed queries instead of their plaintext versions has the additional benefit of reducing the amount of data sent by the client in the network request.
+プレーンテキストバージョンの代わりにハッシュされたクエリを送信することには、ネットワークリクエストでクライアントが送信するデータ量を削減するという追加の利点があります。
 
-## The N+1 Problem
+## N+1問題
 
-GraphQL is designed in a way that allows you to write clean code on the server, where every field on every type has a focused single-purpose function for resolving that value. However, without additional consideration, a naive GraphQL service could be very "chatty" or repeatedly load data from your databases.
+GraphQLは、サーバー上でクリーンなコードを記述できるように設計されており、すべての型のすべてのフィールドに、その値を解決するための焦点を絞った単一目的の関数があります。しかし、追加の考慮なしでは、素朴なGraphQLサービスは非常に「おしゃべり」になる可能性があり、データベースからデータを繰り返し読み込む可能性があります。
 
-Consider the following query—to fetch a hero along with a list of their friends, we can imagine that as the field resolvers execute there will be one request to the underlying data source to get the character object, another to fetch their friends, and then three subsequent requests to load the lists of starships for each human friend:
+次のクエリを考えてみましょう—ヒーローとその友達のリストを取得するために、フィールドリゾルバが実行されると、キャラクターオブジェクトを取得するために基盤となるデータソースへの1つのリクエスト、友達を取得するための別のリクエスト、そして各人間の友達の宇宙船のリストを読み込むための3つの後続のリクエストがあると想像できます：
 
 ```graphql
 # { "graphiql": true }
 query HeroWithFriends {
-  # 1 request for the hero
+  # ヒーローのための1つのリクエスト
   hero {
     name
-    # 1 request for the hero's N friends
+    # ヒーローのN人の友達のための1つのリクエスト
     friends {
       name
-      # N starship requests - one for each of the hero's N human friends
+      # N個の宇宙船リクエスト - ヒーローのN人の人間の友達それぞれに対して1つ
       ... on Human {
         starships {
           name
@@ -48,40 +48,40 @@ query HeroWithFriends {
 }
 ```
 
-This is known as the N+1 problem, where an initial request to an underlying data source (for a hero's friends) leads to N subsequent requests to resolve the data for all of the requested fields (for the friends' starship data).
+これはN+1問題として知られており、基盤となるデータソースへの初期リクエスト（ヒーローの友達のため）が、リクエストされたすべてのフィールドのデータを解決するためのN個の後続のリクエスト（友達の宇宙船データのため）につながります。
 
-This is commonly solved by a batching technique, where multiple requests for data from a backend are collected over a short period and then dispatched in a single request to an underlying database or microservice by using a tool like Facebook's [DataLoader](https://github.com/facebook/dataloader). Additionally, certain GraphQL implementations may have built-in capabilities that allow you to translate operation selection sets into optimized queries to underlying data sources.
+これは、バックエンドからの複数のデータリクエストを短い期間に収集し、Facebookの[DataLoader](https://github.com/facebook/dataloader)のようなツールを使用して、基盤となるデータベースまたはマイクロサービスへの単一のリクエストでディスパッチするバッチ処理技術によって一般的に解決されます。さらに、特定のGraphQL実装には、操作選択セットを基盤となるデータソースへの最適化されたクエリに変換できる組み込み機能がある場合があります。
 
-## Demand control
+## 需要制御
 
-Depending on how a GraphQL schema has been designed, it may be possible for clients to request highly complex operations that place excessive load on the underlying data sources during execution. These kinds of operations may be sent inadvertently by an known client, but they may also be sent by malicious actors.
+GraphQLスキーマの設計方法に応じて、クライアントが実行中に基盤となるデータソースに過度の負荷をかける非常に複雑な操作をリクエストする可能性があります。これらの種類の操作は、既知のクライアントによって不注意に送信される可能性がありますが、悪意のあるアクターによって送信される可能性もあります。
 
-Certain demand control mechanisms can help guard a GraphQL API against these operations, such as paginating list fields, limiting operation depth and breadth, and query complexity analysis. [You can read more about demand control on the Security page](/learn/security/#demand-control).
+特定の需要制御メカニズムは、リストフィールドのページネーション、操作の深度と幅の制限、クエリの複雑さの分析など、これらの操作からGraphQL APIを保護するのに役立ちます。[セキュリティページで需要制御について詳しく読む](/learn/security/#demand-control)。
 
-## JSON (with GZIP)
+## JSON（GZIP付き）
 
-GraphQL services typically respond using JSON even though the GraphQL spec [does not require it](http://spec.graphql.org/draft/#sec-Serialization-Format). JSON may seem like an odd choice for an API layer promising better network performance, however, because it is mostly text it compresses exceptionally well with algorithms such as GZIP, deflate and brotli.
+GraphQLサービスは、GraphQL仕様が[それを要求していない](http://spec.graphql.org/draft/#sec-Serialization-Format)にもかかわらず、通常JSONを使用して応答します。JSONは、より優れたネットワークパフォーマンスを約束するAPI層にとって奇妙な選択のように見えるかもしれませんが、主にテキストであるため、GZIP、deflate、brotliなどのアルゴリズムで非常にうまく圧縮されます。
 
-It's encouraged that any production GraphQL services enable GZIP and encourage their clients to send the header:
+本番環境のGraphQLサービスがGZIPを有効にし、クライアントに次のヘッダーを送信することを推奨します：
 
 ```text
 Accept-Encoding: gzip
 ```
 
-JSON is also very familiar to client and API developers, and is easy to read and debug. In fact, the GraphQL syntax is partly inspired by JSON syntax.
+JSONは、クライアントとAPI開発者にとっても非常に馴染みがあり、読み取りとデバッグが容易です。実際、GraphQL構文は部分的にJSON構文に触発されています。
 
-## Performance monitoring
+## パフォーマンス監視
 
-Monitoring a GraphQL API over time can provide insight into how certain operations impact API performance and help you determine what adjustments to make to maintain its health. For example, you may find that certain fields take a long time to resolve due to under-optimized requests to a backing data source, or you may find that other fields routinely raise errors during execution.
+時間の経過とともにGraphQL APIを監視することで、特定の操作がAPIのパフォーマンスにどのように影響するかについての洞察を提供し、その健全性を維持するためにどの調整を行うべきかを判断するのに役立ちます。例えば、基盤となるデータソースへの最適化されていないリクエストにより、特定のフィールドの解決に時間がかかる場合があることや、他のフィールドが実行中に定期的にエラーを発生させる場合があることがわかるかもしれません。
 
-Observability tooling can provide insight into where bottlenecks exist in the execution of certain GraphQL operations by allowing you to instrument the API service to collect metrics, traces, and logs during requests. For example, [OpenTelemetry](https://opentelemetry.io/) provides a suite of vendor-agnostic tools that can be used in many different languages to support instrumentation of GraphQL APIs.
+可観測性ツールは、APIサービスをインストルメント化して、リクエスト中にメトリクス、トレース、ログを収集できるようにすることで、特定のGraphQL操作の実行においてボトルネックが存在する場所についての洞察を提供できます。例えば、[OpenTelemetry](https://opentelemetry.io/)は、多くの異なる言語でGraphQL APIのインストルメンテーションをサポートするために使用できるベンダーに依存しないツールのスイートを提供します。
 
-## Recap
+## まとめ
 
-To recap these recommendations for improving GraphQL API performance:
+GraphQL APIのパフォーマンスを向上させるためのこれらの推奨事項をまとめると：
 
-- Using `GET` for GraphQL query operations can support HTTP caching and CDN usage, particularly when used in conjunction with hashed query documents
-- Because an operation's selection set can express relationships between different kinds of objects, the N+1 problem can be mitigated during field execution by batching and caching requests to underlying data sources
-- Field pagination, limiting operation depth and breadth, and rate-limiting API requests can help prevent individual GraphQL operations from placing excessive load on server resources
-- GZIP can be used to compress the size of GraphQL JSON-formatted responses when servers and clients support it
-- The overall health of a GraphQL API can be maintained over time by using performance monitoring tools like OpenTelemetry to collect metrics, logs, and traces related to request execution
+- GraphQLクエリ操作に`GET`を使用すると、特にハッシュされたクエリドキュメントと組み合わせて使用する場合、HTTPキャッシングとCDNの使用をサポートできます
+- 操作の選択セットは異なる種類のオブジェクト間の関係を表現できるため、N+1問題は、基盤となるデータソースへのリクエストをバッチ処理およびキャッシングすることで、フィールド実行中に軽減できます
+- フィールドのページネーション、操作の深度と幅の制限、APIリクエストのレート制限は、個々のGraphQL操作がサーバーリソースに過度の負荷をかけることを防ぐのに役立ちます
+- GZIPは、サーバーとクライアントがサポートしている場合、GraphQL JSON形式のレスポンスのサイズを圧縮するために使用できます
+- OpenTelemetryなどのパフォーマンス監視ツールを使用して、リクエスト実行に関連するメトリクス、ログ、トレースを収集することで、時間の経過とともにGraphQL APIの全体的な健全性を維持できます

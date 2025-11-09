@@ -1,22 +1,22 @@
-# Validation
+# 検証
 
-<p className="learn-subtitle">Learn how GraphQL validates operations using a schema</p>
+<p className="learn-subtitle">GraphQLがスキーマを使用して操作を検証する方法を学ぶ</p>
 
-On this page, we'll explore an important phase in the lifecycle of a GraphQL request called [validation](https://spec.graphql.org/draft/#sec-Validation). A request must be syntactically correct to run, but it should also be valid when checked against the API's schema. 
+このページでは、GraphQLリクエストのライフサイクルにおける重要なフェーズである[検証](https://spec.graphql.org/draft/#sec-Validation)について説明します。リクエストは実行するために構文的に正しい必要がありますが、APIのスキーマに対してチェックされたときに有効である必要もあります。
 
-In practice, when a GraphQL operation reaches the server, the document is first parsed and then validated using the type system. This allows servers and clients to effectively inform developers when an invalid query has been created, without relying on runtime checks. Once the operation is validated, it can be [executed](/learn/execution/) on the server and a response will be delivered to the client.
+実際には、GraphQL操作がサーバーに到達すると、ドキュメントはまず解析され、次に型システムを使用して検証されます。これにより、サーバーとクライアントは、ランタイムチェックに依存せずに、無効なクエリが作成されたときに開発者に効果的に通知できます。操作が検証されると、サーバー上で[実行](/learn/execution/)され、レスポンスがクライアントに配信されます。
 
-## Validation examples
+## 検証の例
 
-The GraphQL specification describes the detailed conditions that must be satisfied for a request to be considered valid. In the sections that follow, we'll look at a few examples of common validation issues that may occur in GraphQL operations.
+GraphQL仕様は、リクエストが有効と見なされるために満たす必要がある詳細な条件を説明しています。以下のセクションでは、GraphQL操作で発生する可能性のある一般的な検証問題のいくつかの例を見ていきます。
 
-### Requesting non-existent fields
+### 存在しないフィールドのリクエスト
 
-When we query for a field, the field must be defined on the relevant type. As `hero` returns a `Character` type, its selection set may only request the `Character` type's fields; `Character` does not have a `favoriteSpaceship` field, so this query is invalid:
+フィールドをクエリする場合、そのフィールドは関連する型で定義されている必要があります。`hero`は`Character`型を返すため、その選択セットは`Character`型のフィールドのみをリクエストできます。`Character`には`favoriteSpaceship`フィールドがないため、このクエリは無効です：
 
 ```graphql
 # { "graphiql": true }
-# INVALID: favoriteSpaceship does not exist on Character
+# 無効: favoriteSpaceshipはCharacterに存在しません
 query {
   hero {
     favoriteSpaceship
@@ -24,23 +24,23 @@ query {
 }
 ```
 
-### Selection sets and leaf fields
+### 選択セットとリーフフィールド
 
-Whenever we query for a field and it returns something other than a Scalar or Enum type, we need to specify what data we want to get back from the field (a "selection set"). The `hero` query field returns a `Character`, and we've already seen examples that request fields like `name` and `appearsIn` on it. If we omit those leaf field selections, then the query will not be valid:
+フィールドをクエリし、それがスカラー型または列挙型以外のものを返す場合、フィールドから取得したいデータ（「選択セット」）を指定する必要があります。`hero`クエリフィールドは`Character`を返し、すでにその上で`name`や`appearsIn`のようなフィールドをリクエストする例を見てきました。これらのリーフフィールドの選択を省略すると、クエリは有効ではありません：
 
 ```graphql
 # { "graphiql": true }
-# INVALID: hero is not a scalar, so fields are needed
+# 無効: heroはスカラーではないため、フィールドが必要です
 query {
   hero
 }
 ```
 
-Similarly, querying fields of a scalar or enum doesn’t make sense, therefore adding a selection set to a leaf field will make the query invalid:
+同様に、スカラーまたは列挙型のフィールドをクエリすることは意味がないため、リーフフィールドに選択セットを追加すると、クエリは無効になります：
 
 ```graphql
 # { "graphiql": true }
-# INVALID: name is a scalar, so fields are not permitted
+# 無効: nameはスカラーであるため、フィールドは許可されません
 query {
   hero {
     name {
@@ -50,13 +50,13 @@ query {
 }
 ```
 
-### Missing fragments for fields that output abstract types
+### 抽象型を出力するフィールドのフラグメントの欠如
 
-Earlier, it was noted that a query can only ask for fields on the type in question. So when we query for `hero` which returns a `Character`, we can only request fields that exist on the `Character` Interface type. What happens if we want to query for R2-D2's primary function, though?
+以前、クエリは問題の型のフィールドのみを要求できることが指摘されました。したがって、`Character`を返す`hero`をクエリする場合、`Character`インターフェース型に存在するフィールドのみをリクエストできます。しかし、R2-D2の主要機能をクエリしたい場合はどうなるでしょうか？
 
 ```graphql
 # { "graphiql": true }
-# INVALID: primaryFunction does not exist on Character
+# 無効: primaryFunctionはCharacterに存在しません
 query {
   hero {
     name
@@ -65,7 +65,7 @@ query {
 }
 ```
 
-That query is invalid, because `primaryFunction` is not one of the shared fields defined by the `Character` Interface type. We want some way of indicating that we wish to fetch `primaryFunction` if the `Character` is a `Droid`, and to ignore that field otherwise. We can use the [fragments](/learn/queries/#fragments) to do this. By setting up a fragment defined on `Droid` and including it in the selection set, we ensure that we only query for `primaryFunction` where it is defined:
+そのクエリは無効です。なぜなら、`primaryFunction`は`Character`インターフェース型によって定義された共有フィールドの1つではないためです。`Character`が`Droid`である場合に`primaryFunction`を取得したいことを示す方法が必要です。それ以外の場合は、そのフィールドを無視します。[フラグメント](/learn/queries/#fragments)を使用してこれを行うことができます。`Droid`で定義されたフラグメントを設定し、それを選択セットに含めることで、定義されている場所でのみ`primaryFunction`をクエリすることを保証します：
 
 ```graphql
 # { "graphiql": true }
@@ -81,7 +81,7 @@ fragment DroidFields on Droid {
 }
 ```
 
-This query is valid, but it's a bit verbose; named fragments were valuable above when we used them multiple times, but we're only using this one once. Instead of using a named fragment, we can use an [inline fragment](/learn/queries/#inline-fragments); this still allows us to indicate the type we are querying on, but without naming a separate fragment:
+このクエリは有効ですが、少し冗長です。名前付きフラグメントは、複数回使用した場合に価値がありましたが、これは1回しか使用していません。名前付きフラグメントを使用する代わりに、[インラインフラグメント](/learn/queries/#inline-fragments)を使用できます。これにより、別のフラグメントに名前を付けることなく、クエリしている型を示すことができます：
 
 ```graphql
 # { "graphiql": true }
@@ -95,9 +95,9 @@ query {
 }
 ```
 
-### Cyclic fragment spreads
+### 循環フラグメント展開
 
-To start, let's take a complex valid query. This is a nested query, but with the duplicated fields factored out into a fragment:
+まず、複雑な有効なクエリを見てみましょう。これはネストされたクエリですが、重複したフィールドがフラグメントに因数分解されています：
 
 ```graphql
 # { "graphiql": true }
@@ -119,7 +119,7 @@ fragment NameAndAppearances on Character {
 }
 ```
 
-The following is an alternative to the above query, attempting to use recursion instead of the explicit three levels of nesting. This new query is invalid because a fragment cannot refer to itself (directly or indirectly) since the resulting cycle could create an unbounded result!
+以下は、上記のクエリの代替案で、明示的な3レベルのネストの代わりに再帰を使用しようとしています。この新しいクエリは無効です。なぜなら、フラグメントは（直接的または間接的に）それ自体を参照できないためです。結果として生じるサイクルは無制限の結果を作成する可能性があるためです！
 
 ```graphql
 # { "graphiql": true }
@@ -138,20 +138,20 @@ fragment NameAndAppearancesAndFriends on Character {
 }
 ```
 
-This has just scratched the surface of the validation system; there are a number of validation rules in place to ensure that a GraphQL operation is semantically meaningful. The specification goes into more detail about this topic in the [validation section](https://spec.graphql.org/draft/#sec-Validation), and the [validation directory in the reference implementation](https://github.com/graphql/graphql-js/blob/main/src/validation) contains code implementing a specification-compliant GraphQL validator.
+これは検証システムの表面をかすめただけです。GraphQL操作が意味的に意味があることを保証するために、多くの検証ルールが存在します。仕様では、[検証セクション](https://spec.graphql.org/draft/#sec-Validation)でこのトピックについて詳しく説明しており、[リファレンス実装の検証ディレクトリ](https://github.com/graphql/graphql-js/blob/main/src/validation)には、仕様に準拠したGraphQLバリデーターを実装するコードが含まれています。
 
-## Validation errors
+## 検証エラー
 
-As we have seen in the examples above, when a GraphQL server encounters a validation error in a request, it will return information about what happened in the `errors` key of the response. Specifically, when GraphQL detects a validation issue in a document, it raises a _request error_ before execution begins, meaning that no partial data will be included in the response.
+上記の例で見たように、GraphQLサーバーがリクエストで検証エラーに遭遇すると、レスポンスの`errors`キーに何が起こったかについての情報を返します。具体的には、GraphQLがドキュメントで検証問題を検出すると、実行が開始される前に_リクエストエラー_を発生させます。これは、部分的なデータがレスポンスに含まれないことを意味します。
 
-And because the GraphQL specification requires all implementations to validate incoming requests against the schema, developers won't need to write specific runtime logic to handle these validation issues manually.
+また、GraphQL仕様では、すべての実装がスキーマに対して受信リクエストを検証する必要があるため、開発者はこれらの検証問題を手動で処理するための特定のランタイムロジックを記述する必要はありません。
 
-## Next steps
+## 次のステップ
 
-To recap what we've learned about validation:
+検証について学んだことをまとめると：
 
-- To be executed, requests must include a syntactically correct document that is considered valid when checked against the schema
-- The specification requires implementations check incoming requests contain valid field selections, correct fragment usage, and more
-- When a validation issue occurs, the server will raise a request error and return to the client information about what happened; field execution will not start
+- 実行されるためには、リクエストに構文的に正しいドキュメントが含まれ、スキーマに対してチェックされたときに有効と見なされる必要があります
+- 仕様では、実装が受信リクエストに有効なフィールド選択、正しいフラグメントの使用などが含まれていることを確認する必要があります
+- 検証問題が発生した場合、サーバーはリクエストエラーを発生させ、クライアントに何が起こったかについての情報を返します。フィールドの実行は開始されません
 
-Head over to the [Execution](/learn/execution/) page to learn how GraphQL provides data for each field in a request after the validation step successfully completes.
+検証ステップが正常に完了した後、GraphQLがリクエスト内の各フィールドにデータを提供する方法については、[実行](/learn/execution/)ページに進んでください。

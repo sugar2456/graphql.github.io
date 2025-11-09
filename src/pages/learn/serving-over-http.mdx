@@ -1,46 +1,46 @@
 import { Callout } from "nextra/components"
 
-# Serving over HTTP
+# HTTP経由での提供
 
-<p className="learn-subtitle">Respond to GraphQL requests using an HTTP server</p>
+<p className="learn-subtitle">HTTPサーバーを使用してGraphQLリクエストに応答する</p>
 
-The GraphQL specification doesn't require particular client-server protocols when sending API requests and responses, but HTTP is the most common choice because of its ubiquity. On this page, we'll review some key guidelines to follow when setting up a GraphQL server to operate over HTTP.
+GraphQL仕様は、APIリクエストとレスポンスを送信する際に特定のクライアント-サーバープロトコルを要求していませんが、HTTPはその普及により最も一般的な選択肢です。このページでは、GraphQLサーバーをHTTP経由で動作するように設定する際に従うべき主要なガイドラインを確認します。
 
-Note that the guidelines that follow only apply to stateless query and mutation operations. Visit the [Subscriptions page](/learn/subscriptions) for more information on transport protocols that commonly support these requests.
-
-<Callout type="info">
-The recommendations on this page align with the detailed [GraphQL-over-HTTP specification](https://graphql.github.io/graphql-over-http/draft/) currently in development. Though not yet finalized, this draft specification acts as a single source of truth for GraphQL client and library maintainers, detailing how to expose and consume a GraphQL API using an HTTP transport. Unlike the language specification, adherence is not mandatory, but most implementations are moving towards these standards to maximize interoperability.
-</Callout>
-
-## API endpoint
-
-HTTP is commonly associated with REST, which uses "resources" as its core concept. In contrast, GraphQL's conceptual model is an [entity graph](/learn/thinking-in-graphs/). As a result, entities in GraphQL are not identified by URLs. Instead, a GraphQL server operates on a single URL/endpoint, usually `/graphql`, and all GraphQL requests for a given service should be directed to this endpoint.
-
-## Where auth happens
-
-Most modern web frameworks use a pipeline model where requests are passed through a stack of _middleware_, also known as _filters_ or _plugins_. As the request flows through the pipeline, it can be inspected, transformed, modified, or terminated with a response. GraphQL should be placed after all authentication middleware so that you have access to the same session and user information you would in your other HTTP endpoint handlers.
-
-After authentication, the server should not make any [authorization](/learn/authorization/) decisions about the request until GraphQL execution begins. Specifically, field-level authorization should be enforced by the business logic called from resolvers during [GraphQL's ExecuteRequest()](https://spec.graphql.org/draft/#ExecuteRequest()), allowing for a partial response to be generated if authorization-related errors are raised.
-
-## Request format
-
-### Headers
-
-GraphQL clients and servers should support JSON for serialization and may support other formats. Clients should also indicate what media types they support in responses using the `Accept` HTTP header. Specifically, the client should include the `application/graphql-response+json` in the `Accept` header.
-
-If no encoding information is included with this header, then it will be assumed to be `utf-8`. However, the server may respond with an error if a client doesn't provide the `Accept` header with a request.
+以下のガイドラインは、ステートレスなクエリとミューテーション操作にのみ適用されることに注意してください。これらのリクエストを一般的にサポートするトランスポートプロトコルの詳細については、[サブスクリプションページ](/learn/subscriptions)をご覧ください。
 
 <Callout type="info">
-The `application/graphql-response+json` is described in the draft GraphQL over HTTP specification. To ensure compatibility, if a client sends a request to a legacy GraphQL server before 1st January 2025, the `Accept` header should also include the `application/json` media type as follows: `application/graphql-response+json, application/json`
+このページの推奨事項は、現在開発中の詳細な[GraphQL-over-HTTP仕様](https://graphql.github.io/graphql-over-http/draft/)と一致しています。まだ最終化されていませんが、このドラフト仕様は、GraphQLクライアントとライブラリのメンテナーにとって単一の情報源として機能し、HTTPトランスポートを使用してGraphQL APIを公開および消費する方法を詳しく説明しています。言語仕様とは異なり、準拠は必須ではありませんが、ほとんどの実装は相互運用性を最大化するためにこれらの標準に向かって進んでいます。
 </Callout>
 
-### Methods
+## APIエンドポイント
 
-Your GraphQL HTTP server must handle the HTTP `POST` method for query and mutation operations, and may also accept the `GET` method for query operations.
+HTTPは一般的にRESTと関連付けられており、RESTは「リソース」をその核心概念として使用しています。対照的に、GraphQLの概念モデルは[エンティティグラフ](/learn/thinking-in-graphs/)です。その結果、GraphQLのエンティティはURLによって識別されません。代わりに、GraphQLサーバーは単一のURL/エンドポイント（通常は`/graphql`）で動作し、特定のサービスのすべてのGraphQLリクエストはこのエンドポイントに送信される必要があります。
 
-#### `POST` request and body
+## 認証が行われる場所
 
-A standard GraphQL POST request should set `application/json` for its `Content-type` header, and include a JSON-encoded body of the following form:
+ほとんどのモダンなWebフレームワークは、リクエストが_ミドルウェア_のスタック（_フィルター_または_プラグイン_とも呼ばれる）を通過するパイプラインモデルを使用します。リクエストがパイプラインを流れると、検査、変換、変更、またはレスポンスで終了させることができます。GraphQLは、他のHTTPエンドポイントハンドラーと同じセッションとユーザー情報にアクセスできるように、すべての認証ミドルウェアの後に配置する必要があります。
+
+認証後、サーバーはGraphQL実行が開始されるまで、リクエストに関する[認可](/learn/authorization/)決定を行わないでください。具体的には、フィールドレベルの認可は、[GraphQLのExecuteRequest()](https://spec.graphql.org/draft/#ExecuteRequest())中にリゾルバから呼び出されるビジネスロジックによって強制される必要があり、認可関連のエラーが発生した場合に部分的なレスポンスを生成できるようにします。
+
+## リクエスト形式
+
+### ヘッダー
+
+GraphQLクライアントとサーバーは、シリアル化のためにJSONをサポートし、他の形式もサポートする場合があります。クライアントは、`Accept` HTTPヘッダーを使用して、レスポンスでサポートするメディアタイプを示す必要があります。具体的には、クライアントは`Accept`ヘッダーに`application/graphql-response+json`を含める必要があります。
+
+このヘッダーにエンコーディング情報が含まれていない場合、`utf-8`と見なされます。ただし、クライアントがリクエストに`Accept`ヘッダーを提供しない場合、サーバーはエラーで応答する場合があります。
+
+<Callout type="info">
+`application/graphql-response+json`は、GraphQL over HTTP仕様のドラフトで説明されています。互換性を確保するために、クライアントが2025年1月1日より前にレガシーGraphQLサーバーにリクエストを送信する場合、`Accept`ヘッダーには次のように`application/json`メディアタイプも含める必要があります：`application/graphql-response+json, application/json`
+</Callout>
+
+### メソッド
+
+GraphQL HTTPサーバーは、クエリとミューテーション操作に対してHTTP `POST`メソッドを処理する必要があり、クエリ操作に対して`GET`メソッドも受け入れる場合があります。
+
+#### `POST`リクエストと本文
+
+標準的なGraphQL POSTリクエストは、`Content-type`ヘッダーに`application/json`を設定し、次の形式のJSONエンコードされた本文を含める必要があります：
 
 ```json
 {
@@ -51,15 +51,15 @@ A standard GraphQL POST request should set `application/json` for its `Content-t
 }
 ```
 
-The `query` parameter is required and will contain the source text of a GraphQL document. Note that the term `query` here is a misnomer: the document may contain any valid GraphQL operations (and associated fragments).
+`query`パラメータは必須で、GraphQLドキュメントのソーステキストが含まれます。ここでの`query`という用語は誤称であることに注意してください：ドキュメントには任意の有効なGraphQL操作（および関連するフラグメント）が含まれる可能性があります。
 
-The `operationName`, `variables`, and `extensions` parameters are optional fields. `operationName` is only required if multiple operations are present in the `query` document.
+`operationName`、`variables`、および`extensions`パラメータはオプションフィールドです。`operationName`は、`query`ドキュメントに複数の操作が存在する場合にのみ必要です。
 
-Note that if the `Content-type` header is missing in the client's request, then the server should respond with a `4xx` status code. As with the `Accept` header, `utf-8` encoding is assumed for a request body with an `application/json` media type when this information is not explicitly provided.
+クライアントのリクエストに`Content-type`ヘッダーが欠落している場合、サーバーは`4xx`ステータスコードで応答する必要があることに注意してください。`Accept`ヘッダーと同様に、この情報が明示的に提供されていない場合、`application/json`メディアタイプのリクエスト本文に対して`utf-8`エンコーディングが想定されます。
 
-#### `GET` request and parameters
+#### `GET`リクエストとパラメータ
 
-When receiving an HTTP GET request, the GraphQL document should be provided in the `query` parameter of the query string. For example, if we wanted to execute the following GraphQL query:
+HTTP GETリクエストを受信する場合、GraphQLドキュメントはクエリ文字列の`query`パラメータで提供される必要があります。例えば、次のGraphQLクエリを実行したい場合：
 
 ```graphql
 {
@@ -69,33 +69,33 @@ When receiving an HTTP GET request, the GraphQL document should be provided in t
 }
 ```
 
-This request could be sent via an HTTP GET like so:
+このリクエストは、次のようにHTTP GET経由で送信できます：
 
 ```
 http://myapi/graphql?query={me{name}}
 ```
 
-Query variables can be sent as a JSON-encoded string in an additional query parameter called `variables`. If the query contains several named operations, an `operationName` query parameter can be used to control which one should be executed.
+クエリ変数は、`variables`という追加のクエリパラメータでJSONエンコードされた文字列として送信できます。クエリに複数の名前付き操作が含まれている場合、`operationName`クエリパラメータを使用して、実行する操作を制御できます。
 
-#### Choosing an HTTP method
+#### HTTPメソッドの選択
 
-When choosing an HTTP method for a GraphQL request, there are a few points to consider. First, support for HTTP methods other than `POST` will be at the discretion of the GraphQL server, so a client will be limited to the supported verbs.
+GraphQLリクエストのHTTPメソッドを選択する際に、考慮すべき点がいくつかあります。まず、`POST`以外のHTTPメソッドのサポートは、GraphQLサーバーの裁量によるため、クライアントはサポートされている動詞に制限されます。
 
-Additionally, the `GET` HTTP method may only be used for `query` operations, so if a client requests execution of a `mutation` operation then it must use the `POST` method instead.
+さらに、`GET` HTTPメソッドは`query`操作にのみ使用できるため、クライアントが`mutation`操作の実行をリクエストする場合、代わりに`POST`メソッドを使用する必要があります。
 
-When servers do support the `GET` method for query operations, a client may be encouraged to leverage this option to facilitate HTTP caching or edge caching in a content delivery network (CDN). However, because GraphQL documents strings may be quite long for complex operations, the query parameters may exceed the limits that browsers and CDNs impose on URL lengths.
+サーバーがクエリ操作に対して`GET`メソッドをサポートしている場合、クライアントはHTTPキャッシングまたはコンテンツ配信ネットワーク（CDN）でのエッジキャッシングを促進するためにこのオプションを活用することが推奨される場合があります。ただし、GraphQLドキュメント文字列は複雑な操作に対して非常に長くなる可能性があるため、クエリパラメータがブラウザとCDNがURLの長さに課す制限を超える可能性があります。
 
-In these cases, a common approach is for the server to store identified GraphQL documents using a technique such as [_persisted documents_](https://github.com/graphql/graphql-over-http/pull/264), _automatic persisted queries_, or _trusted documents_. This allows the client to send a short document identifier instead of the full query text.
+このような場合、一般的なアプローチは、サーバーが[_persisted documents_](https://github.com/graphql/graphql-over-http/pull/264)、_automatic persisted queries_、または_trusted documents_などの手法を使用して識別されたGraphQLドキュメントを保存することです。これにより、クライアントは完全なクエリテキストの代わりに短いドキュメント識別子を送信できます。
 
-## Response format
+## レスポンス形式
 
-### Headers
+### ヘッダー
 
-The response type should be `application/graphql-response+json` but can be `application/json` to support legacy clients. The server will indicate the media type in the `Content-type` header of the response. It should also indicate the encoding, otherwise `utf-8` will be assumed.
+レスポンスタイプは`application/graphql-response+json`である必要がありますが、レガシークライアントをサポートするために`application/json`にすることもできます。サーバーは、レスポンスの`Content-type`ヘッダーでメディアタイプを示します。エンコーディングも示す必要があり、そうでない場合は`utf-8`が想定されます。
 
-### Body
+### 本文
 
-Regardless of the HTTP method used to send the query and variables, the response should be returned in the body of the request in JSON format. As mentioned in the GraphQL specification, a query might result in some data and some errors, and those should be returned in a JSON object of the form:
+クエリと変数を送信するために使用されるHTTPメソッドに関係なく、レスポンスはJSON形式でリクエストの本文で返される必要があります。GraphQL仕様で述べられているように、クエリは一部のデータといくつかのエラーをもたらす可能性があり、それらは次の形式のJSONオブジェクトで返される必要があります：
 
 ```json
 {
@@ -105,35 +105,35 @@ Regardless of the HTTP method used to send the query and variables, the response
 }
 ```
 
-If no errors were returned, the `errors` field must not be present in the response. If errors occurred before execution could start, the `errors` field must include these errors and the `data` field must not be present in the response. The `extensions` field is optional and information provided here will be at the discretion of the GraphQL implementation.
+エラーが返されなかった場合、`errors`フィールドはレスポンスに存在してはなりません。実行が開始される前にエラーが発生した場合、`errors`フィールドにはこれらのエラーが含まれ、`data`フィールドはレスポンスに存在してはなりません。`extensions`フィールドはオプションであり、ここで提供される情報はGraphQL実装の裁量によります。
 
-You can read more about GraphQL spec-compliant response formats on the [Response page](/learn/response/).
+GraphQL仕様に準拠したレスポンス形式について詳しくは、[レスポンスページ](/learn/response/)をご覧ください。
 
-### Status Codes
+### ステータスコード
 
-If a response contains a `data` key and its value is not `null`, then the server should respond with a `2xx` status code for either the `application/graphql-response+json` or `application/json` media types. This is the case even if the response includes errors, since HTTP does not yet have a status code representing "partial success."
+レスポンスに`data`キーが含まれ、その値が`null`でない場合、サーバーは`application/graphql-response+json`または`application/json`メディアタイプのいずれかに対して`2xx`ステータスコードで応答する必要があります。これは、レスポンスにエラーが含まれている場合でも当てはまります。HTTPにはまだ「部分的な成功」を表すステータスコードがないためです。
 
-For validation errors that prevent the execution of a GraphQL operation, the server will typically send a `400` status code, although some legacy servers may return a `2xx` status code when the `application/json` media type is used.
+GraphQL操作の実行を妨げる検証エラーについては、サーバーは通常`400`ステータスコードを送信しますが、一部のレガシーサーバーは`application/json`メディアタイプが使用されている場合に`2xx`ステータスコードを返す場合があります。
 
-For legacy servers that respond with the `application/json` media type, the use of `4xx` and `5xx` status codes for valid GraphQL requests that fail to execute is discouraged but may be used depending on the implementation. Because of potential ambiguities regarding the source of the server-side error, a `2xx` code should be used with this media type instead.
+`application/json`メディアタイプで応答するレガシーサーバーについては、実行に失敗した有効なGraphQLリクエストに対して`4xx`および`5xx`ステータスコードの使用は推奨されませんが、実装によっては使用される場合があります。サーバー側エラーのソースに関する潜在的な曖昧さのため、このメディアタイプでは代わりに`2xx`コードを使用する必要があります。
 
-However, for responses with the `application/graphql-response+json` media type, the server will reply with a `4xx` or `5xx` status code if a valid GraphQL request fails to execute.
+ただし、`application/graphql-response+json`メディアタイプのレスポンスについては、有効なGraphQLリクエストが実行に失敗した場合、サーバーは`4xx`または`5xx`ステータスコードで応答します。
 
-## Server implementations
+## サーバー実装
 
-If you use Node.js, we recommend looking at the [list of JS server implementations](/community/tools-and-libraries/?tags=javascript_server).
+Node.jsを使用している場合は、[JSサーバー実装のリスト](/community/tools-and-libraries/?tags=javascript_server)を確認することをお勧めします。
 
-You can view a [list of servers written in many other languages here](/community/tools-and-libraries/?tags=server).
+[他の多くの言語で記述されたサーバーのリストはこちらで確認できます](/community/tools-and-libraries/?tags=server)。
 
-## Recap
+## まとめ
 
-To recap these recommendations for serving GraphQL over HTTP:
+HTTP経由でGraphQLを提供するためのこれらの推奨事項をまとめると：
 
-- The server should handle user authentication before a GraphQL request is validated; authorization should happen within your business logic during GraphQL request execution
-- GraphQL APIs are exposed at a single endpoint, typically ending with `/graphql`
-- GraphQL clients and servers should support JSON, but may support other formats
-- Client should indicate a media type on the `Accept` header of `application/graphql-response+json`
-- GraphQL requests are sent using the `POST` HTTP method, but query operations may also be sent using the `GET` method
-- Clients should also provide a `Content-type` header with a value of `application/json` for `POST` requests
-- The full or partial result of an executed GraphQL operation will be available on the `data` key in the JSON-encoded body of the response, while information about any errors raised during validation or execution will be available on the `errors` key
-- Response status codes for valid GraphQL operations that fail may vary depending on the indicated media type of the response, but any GraphQL response with a non-null `data` key will provide a `2xx` response
+- サーバーは、GraphQLリクエストが検証される前にユーザー認証を処理する必要があります。認可は、GraphQLリクエスト実行中にビジネスロジック内で行われる必要があります
+- GraphQL APIは、通常`/graphql`で終わる単一のエンドポイントで公開されます
+- GraphQLクライアントとサーバーはJSONをサポートする必要がありますが、他の形式もサポートする場合があります
+- クライアントは、`Accept`ヘッダーに`application/graphql-response+json`のメディアタイプを示す必要があります
+- GraphQLリクエストは`POST` HTTPメソッドを使用して送信されますが、クエリ操作は`GET`メソッドを使用して送信することもできます
+- クライアントは、`POST`リクエストに対して`application/json`の値を持つ`Content-type`ヘッダーも提供する必要があります
+- 実行されたGraphQL操作の完全または部分的な結果は、レスポンスのJSONエンコードされた本文の`data`キーで利用可能になり、検証または実行中に発生したエラーに関する情報は`errors`キーで利用可能になります
+- 失敗した有効なGraphQL操作のレスポンスステータスコードは、レスポンスの示されたメディアタイプによって異なる場合がありますが、非nullの`data`キーを持つGraphQLレスポンスは`2xx`レスポンスを提供します

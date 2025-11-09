@@ -1,6 +1,9 @@
-# Source Repository for GraphQL.org
+# GraphQL.org 日本語翻訳リポジトリ
 
-This repository contains the source code for the [GraphQL website](https://graphql.org).
+> ⚠️ **非公式翻訳について**  
+> このリポジトリは、[GraphQL公式サイト](https://graphql.org)の非公式な日本語翻訳版です。公式のドキュメントは[公式リポジトリ](https://github.com/graphql/graphql.github.io)で管理されています。翻訳の正確性については保証されず、最新の情報については必ず[公式サイト](https://graphql.org)を参照してください。
+
+This repository contains an **unofficial Japanese translation** of the [GraphQL website](https://graphql.org). The official documentation is maintained in the [official repository](https://github.com/graphql/graphql.github.io). Please refer to the [official website](https://graphql.org) for the most up-to-date and authoritative information.
 
 You can find more discussions on the #website channel on [the GraphQL Discord](https://discord.graphql.org).
 
@@ -12,6 +15,18 @@ You can find more discussions on the #website channel on [the GraphQL Discord](h
 - [How to Contribute](#how-to-contribute)
 - [CLA Process](#cla-process)
 - [Financial Support](#financial-support)
+
+## このリポジトリについて
+
+このリポジトリは、GraphQL公式ドキュメントの日本語翻訳を提供することを目的としています。翻訳は個人によって維持されており、公式のGraphQL Foundationとは独立して運営されています。
+
+### 翻訳の範囲
+
+現在、以下のセクションが日本語に翻訳されています：
+
+- `/learn/` 配下のドキュメント（入門ガイド、ベストプラクティスなど）
+
+翻訳の進捗状況や貢献方法については、[Issues](https://github.com/graphql/graphql.github.io/issues)や[Pull Requests](https://github.com/graphql/graphql.github.io/pulls)をご確認ください。
 
 ## Overview
 

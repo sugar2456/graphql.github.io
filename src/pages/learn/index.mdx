@@ -1,16 +1,16 @@
 import { Callout } from "nextra/components"
 
-# Introduction to GraphQL
+# GraphQL入門
 
-<p className="learn-subtitle">Learn about GraphQL, how it works, and how to use it</p>
+<p className="learn-subtitle">GraphQLについて学び、その仕組みと使い方を理解する</p>
 
-GraphQL is a query language for your API, and a server-side runtime for executing queries using a type system you define for your data. The [GraphQL specification](https://spec.graphql.org/) was open-sourced in 2015 and has since been implemented in a variety of programming languages. GraphQL isn't tied to any specific database or storage engine—it is backed by your existing code and data.
+GraphQLはAPIのためのクエリ言語であり、データに対して定義した型システムを使用してクエリを実行するサーバーサイドランタイムです。[GraphQL仕様](https://spec.graphql.org/)は2015年にオープンソース化され、以降、様々なプログラミング言語で実装されています。GraphQLは特定のデータベースやストレージエンジンに依存せず、既存のコードとデータによって支えられています。
 
-<Callout type="info">If you're already familiar with GraphQL and would like to read documentation on how to build a GraphQL service, then there are libraries to help you implement GraphQL in [many different languages](/community/tools-and-libraries/?tags=server). There are also many libraries available that allow [client applications to query existing GraphQL APIs](/community/tools-and-libraries/?tags=client).</Callout>
+<Callout type="info">すでにGraphQLに精通しており、GraphQLサービスの構築方法に関するドキュメントを読みたい場合は、[多くの異なる言語](/community/tools-and-libraries/?tags=server)でGraphQLを実装するのに役立つライブラリがあります。また、[クライアントアプリケーションが既存のGraphQL APIをクエリできる](/community/tools-and-libraries/?tags=client)ライブラリも多数利用可能です。</Callout>
 
-## Describe your API with a type system
+## 型システムでAPIを記述する
 
-A GraphQL service is created by [defining types and their fields](/learn/schema/), and then writing a function for each field to [provide the required data](/learn/execution/). For example, a GraphQL service that tells you the name of a logged-in user might look like this:
+GraphQLサービスは、[型とそのフィールドを定義](/learn/schema/)し、各フィールドに対して[必要なデータを提供する](/learn/execution/)関数を記述することで作成されます。例えば、ログインしているユーザーの名前を教えてくれるGraphQLサービスは次のようになります：
 
 ```graphql
 type Query {
@@ -22,27 +22,27 @@ type User {
 }
 ```
 
-Along with functions for each field on each type:
+各型の各フィールドに対する関数と共に：
 
 ```js
-// Resolver for the `me` field on the `Query` type
+// `Query`型の`me`フィールドのリゾルバ
 function resolveQueryMe(_parent, _args, context, _info) {
   return context.request.auth.user;
 }
 
-// Resolver for the `name` field on the `User` type
+// `User`型の`name`フィールドのリゾルバ
 function resolveUserName(user, _args, context, _info) {
   return context.db.getUserFullName(user.id);
 }
 ```
 
-In the example above, the function that provides data for the `me` field on the `Query` type uses information about the authenticated user who made the request, while the `name` field on the `User` type is populated by using that user's ID to fetch their full name from a database.
+上記の例では、`Query`型の`me`フィールドにデータを提供する関数は、リクエストを行った認証済みユーザーに関する情報を使用しますが、`User`型の`name`フィールドは、そのユーザーのIDを使用してデータベースからフルネームを取得することで値が設定されます。
 
-## Query exactly what you need
+## 必要なものだけをクエリする
 
-After a GraphQL service is running (typically at a URL on a web service), it can receive [GraphQL queries](/learn/queries/) to validate and execute from clients. The service first checks a query to ensure it only refers to the types and fields defined for the API and then runs the provided functions to produce a result.
+GraphQLサービスが実行されると（通常はWebサービスのURL上で）、クライアントから[GraphQLクエリ](/learn/queries/)を受け取り、検証して実行できます。サービスはまずクエリをチェックして、APIに定義された型とフィールドのみを参照していることを確認し、次に提供された関数を実行して結果を生成します。
 
-For example, the query:
+例えば、次のクエリは：
 
 ```graphql
 {
@@ -52,7 +52,7 @@ For example, the query:
 }
 ```
 
-Could produce the following JSON result:
+次のJSONの結果を生成できます：
 
 ```json
 {
@@ -64,11 +64,11 @@ Could produce the following JSON result:
 }
 ```
 
-With even a simple query, we can see some of the key features that make GraphQL so powerful. The client can make queries to the API that mirror the structure of the data that they need and then receive just that data in the expected shape with a single request—and without having to worry about which underlying data sources provided it.
+シンプルなクエリでさえ、GraphQLを非常に強力にする主要な機能のいくつかを見ることができます。クライアントは必要なデータの構造を反映するクエリをAPIに対して実行し、期待される形式でそのデータだけを単一のリクエストで受け取ることができます。そして、どの基盤となるデータソースがそれを提供したかを気にする必要はありません。
 
-## Evolve your API without versioning
+## バージョニングなしでAPIを進化させる
 
-Client requirements change over time and GraphQL allows your API to evolve in response to those needs and without the overhead of managing different API versions. For example, if a new feature calls for more specific name values to be available, then the `User` type could be updated as follows:
+クライアントの要件は時間とともに変化し、GraphQLは異なるAPIバージョンを管理するオーバーヘッドなしに、それらのニーズに応じてAPIを進化させることができます。例えば、新しい機能でより具体的な名前の値が利用可能である必要がある場合、`User`型は次のように更新できます：
 
 ```graphql
 type User {
@@ -78,28 +78,28 @@ type User {
 }
 ```
 
-Client tooling will encourage developers to use the new fields and remove usage of the deprecated `name` field. The field can be removed once it is determined it is no longer used; in the meantime GraphQL will continue to provide its data as expected.
+クライアントツールは開発者に新しいフィールドの使用を促し、非推奨の`name`フィールドの使用を削除します。フィールドはもはや使用されていないと判断されたら削除できます。それまでの間、GraphQLは期待通りにデータを提供し続けます。
 
-## Try it out!
+## 試してみよう！
 
-The best way to learn GraphQL is to start writing queries. The query editors used throughout this guide are **interactive**, so try adding an `id` and `appearsIn` fields to the `hero` object to see an updated result:
+GraphQLを学ぶ最良の方法は、クエリを書き始めることです。このガイド全体で使用されているクエリエディタは**インタラクティブ**なので、`hero`オブジェクトに`id`と`appearsIn`フィールドを追加して、更新された結果を確認してみてください：
 
 ```graphql
 # { "graphiql": true }
 {
   hero {
     name
-    # add additional fields here!
+    # ここに追加のフィールドを追加してください！
   }
 }
 ```
 
 <Callout type="info">
-The examples in this guide are based on [a modified version of the SWAPI GraphQL schema](https://github.com/graphql/graphql.github.io/blob/source/src/components/interactive-code-block/swapi-schema.tsx). Because these queries are designed for illustrative purposes, they will not run on the full version of the SWAPI GraphQL API due to differences between the two schemas. [You can try the full version of the API here.](https://graphql.org/swapi-graphql/)
+このガイドの例は[改変版のSWAPI GraphQLスキーマ](https://github.com/graphql/graphql.github.io/blob/source/src/components/interactive-code-block/swapi-schema.tsx)に基づいています。これらのクエリは説明を目的として設計されているため、2つのスキーマ間の違いにより、完全版のSWAPI GraphQL APIでは実行されません。[完全版のAPIはこちらで試すことができます。](https://graphql.org/swapi-graphql/)
 </Callout>
 
-## Next steps
+## 次のステップ
 
-Now that you know some key GraphQL concepts, you're ready to learn about all of the different aspects of its [type system](/learn/schema/).
+GraphQLの主要な概念を理解したので、[型システム](/learn/schema/)のさまざまな側面について学ぶ準備ができました。
 
-For an in-depth learning experience with practical tutorials, see [the available training courses](/community/resources/training-courses).
+実践的なチュートリアルを使った詳細な学習体験については、[利用可能なトレーニングコース](/community/resources/training-courses)をご覧ください。

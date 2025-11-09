@@ -4,73 +4,48 @@ sidebarTitle: Federation
 
 import { Tabs } from 'nextra/components'
 
-# GraphQL federation
+# GraphQLフェデレーション
 
-An alternative design approach to the classical monolith, often described as microservices, emphasizes breaking down complex systems into smaller, independently managed components. In some ways, GraphQL federation is like microservices for GraphQL - an architectural pattern that has found particular resonance in the GraphQL ecosystem.
+古典的なモノリスの代替設計アプローチは、しばしばマイクロサービスとして説明され、複雑なシステムをより小さな、独立して管理されるコンポーネントに分解することを強調します。ある意味で、GraphQLフェデレーションは、GraphQLのマイクロサービスのようなものです—GraphQLエコシステムで特に共鳴を見出したアーキテクチャパターンです。
 
-GraphQL federation gained widespread adoption after
-[Apollo GraphQL introduced Apollo Federation in 2019](https://www.apollographql.com/blog/apollo-federation-f260cf525d21).
-Their implementation has become a reference point for the GraphQL community, helping establish
-federation as a standard architectural pattern for building a distributed graph in the GraphQL
-ecosystem.
+GraphQLフェデレーションは、[Apollo GraphQLが2019年にApollo Federationを導入した](https://www.apollographql.com/blog/apollo-federation-f260cf525d21)後に広く採用されました。彼らの実装は、GraphQLコミュニティの参照ポイントとなり、GraphQLエコシステムで分散グラフを構築するための標準的なアーキテクチャパターンとしてフェデレーションを確立するのに役立ちました。
 
-With more companies and developers seeing the benefits of building a distributed GraphQL schema with
-federation, the GraphQL ecosystem is now moving towards standardization of federation patterns. The
-GraphQL Foundation's
-[Composite Schema Working Group](https://github.com/graphql/composite-schemas-wg), which includes
-engineers from various organizations across the industry including
-[Apollo GraphQL](https://apollographql.com), [ChilliCream](https://chillicream.com/),
-[Graphile](https://www.graphile.org/), [Hasura](https://hasura.io/),
-[Netflix](https://www.netflix.com/) and [The Guild](https://the-guild.dev), is actively working on
-creating
-[an official specification for GraphQL Federation](https://github.com/graphql/composite-schemas-spec).
-This effort aims to standardize how GraphQL services can be composed and executed across distributed
-systems, while ensuring room for innovation and different implementations.
+より多くの企業や開発者がフェデレーションを使用して分散GraphQLスキーマを構築する利点を見るにつれて、GraphQLエコシステムは現在、フェデレーションパターンの標準化に向かっています。GraphQL Foundationの[Composite Schema Working Group](https://github.com/graphql/composite-schemas-wg)は、[Apollo GraphQL](https://apollographql.com)、[ChilliCream](https://chillicream.com/)、[Graphile](https://www.graphile.org/)、[Hasura](https://hasura.io/)、[Netflix](https://www.netflix.com/)、[The Guild](https://the-guild.dev)など、業界全体のさまざまな組織のエンジニアを含み、[GraphQLフェデレーションの公式仕様](https://github.com/graphql/composite-schemas-spec)の作成に積極的に取り組んでいます。この取り組みは、GraphQLサービスが分散システム間でどのように構成され、実行されるかを標準化することを目的としており、革新と異なる実装の余地を確保しています。
 
-## What is federation?
+## フェデレーションとは何ですか？
 
-Architecturally, federation is an approach to organizing and managing distributed systems. At its
-core, federation allows autonomous components to work together while maintaining their independence.
-Think of it like a federal government system: individual states maintain their sovereignty while
-cooperating under a central authority for shared concerns.
+アーキテクチャ的には、フェデレーションは分散システムを組織化および管理するアプローチです。その核心では、フェデレーションは、自律的なコンポーネントが独立性を維持しながら協力することを可能にします。連邦政府システムのように考えてください：個々の州は主権を維持しながら、共有の懸念事項について中央権限の下で協力します。
 
-In software architecture, federation enables organizations to:
+ソフトウェアアーキテクチャでは、フェデレーションにより、組織は以下を可能にします：
 
-- Distribute responsibility across independent teams
-- Scale different components independently
-- Maintain clear boundaries between different domains
-- Enable autonomous development and deployment
-- Reduce single points of failure
+- 独立したチーム間で責任を分散する
+- 異なるコンポーネントを独立してスケールする
+- 異なるドメイン間の明確な境界を維持する
+- 自律的な開発とデプロイを可能にする
+- 単一障害点を減らす
 
-Think of the "Login with Google" or "Login with Facebook" buttons you see on websites. This is
-federation in action: you can use your Google or Facebook account to log into many different
-websites, even though each company manages their own login system separately.
+Webサイトで見る「Googleでログイン」または「Facebookでログイン」ボタンを考えてください。これはフェデレーションの実例です：各企業が独自のログインシステムを個別に管理しているにもかかわらず、GoogleまたはFacebookアカウントを使用して多くの異なるWebサイトにログインできます。
 
-## What is federated GraphQL?
+## フェデレーションGraphQLとは何ですか？
 
-GraphQL federation applies those principles to GraphQL APIs. It enables organizations to build a
-unified GraphQL schema from multiple independent services (most often called subgraphs), each
-responsible for its portion of the application's data graph.
+GraphQLフェデレーションは、これらの原則をGraphQL APIに適用します。組織が複数の独立したサービス（最も一般的にはサブグラフと呼ばれる）から統一されたGraphQLスキーマを構築できるようにし、それぞれがアプリケーションのデータグラフの一部を担当します。
 
-Consider an e-commerce platform: You might have separate teams managing products, user accounts, and
-order processing. With GraphQL federation, each team can:
+eコマースプラットフォームを考えてみましょう：製品、ユーザーアカウント、注文処理を管理する別々のチームがあるかもしれません。GraphQLフェデレーションを使用すると、各チームは以下を実行できます：
 
-- Define their own GraphQL schema
-- Deploy and scale their service independently
-- Contribute to a unified GraphQL API without tight coupling
-- Maintain ownership of their domain-specific logic
+- 独自のGraphQLスキーマを定義する
+- サービスを独立してデプロイおよびスケールする
+- 密結合なしで統一されたGraphQL APIに貢献する
+- ドメイン固有のロジックの所有権を維持する
 
-The magic happens through a federated gateway that acts as the central coordinator, composing these
-separate schemas into a unified schema that clients can query.
+魔法は、中央コーディネーターとして機能するフェデレーションゲートウェイを通じて起こり、これらの別々のスキーマを、クライアントがクエリできる統一されたスキーマに構成します。
 
-## How federation works in GraphQL
+## GraphQLでのフェデレーションの仕組み
 
-The federation process involves several key components:
+フェデレーションプロセスには、いくつかの主要なコンポーネントが含まれます：
 
-- **Subgraphs**: Individual services that define their own GraphQL schemas and resolvers
-- **Gateway**: A specialized service that sits between clients and your federated services
-- **Schema composition**: The process of merging schemas while resolving references between them,
-  often handled by schema registries.
+- **サブグラフ**: 独自のGraphQLスキーマとリゾルバを定義する個別のサービス
+- **ゲートウェイ**: クライアントとフェデレーションサービス間にある専門サービス
+- **スキーマ構成**: それらの間の参照を解決しながらスキーマをマージするプロセス。多くの場合、スキーマレジストリによって処理されます。
 
 <Tabs items={['Products subgraph', 'Orders subgraph', 'Users subgraph']}> <Tabs.Tab>
 
@@ -118,16 +93,11 @@ type Order {
 
 </Tabs.Tab> </Tabs>
 
-### Schema composition
+### スキーマ構成
 
-Let's break down schema composition in GraphQL federation with more detail and examples. Schema
-composition is the process where multiple subgraph schemas are combined into one unified schema.
-It's more complex than simply merging schemas together, though, because it needs to handle
-relationships, detect incompatibilities, and ensure types are properly connected across services and
-subgraphs.
+GraphQLフェデレーションでのスキーマ構成について、より詳細と例で説明しましょう。スキーマ構成は、複数のサブグラフスキーマが1つの統一されたスキーマに結合されるプロセスです。ただし、関係を処理し、非互換性を検出し、サービスとサブグラフ間で型が適切に接続されていることを確認する必要があるため、単純にスキーマをマージするよりも複雑です。
 
-Based on the examples we provided before, here's the unified schema GraphQL clients will see and can
-query:
+前に提供した例に基づいて、GraphQLクライアントが表示し、クエリできる統一されたスキーマを次に示します：
 
 ```graphql
 type Query {
@@ -155,14 +125,11 @@ type Product {
 }
 ```
 
-This unified schema combines types and fields from all three subgraphs (Users, Orders, and
-Products), allowing clients to seamlessly query across these domains.
+この統一されたスキーマは、3つのサブグラフ（Users、Orders、Products）すべてから型とフィールドを結合し、クライアントがこれらのドメイン間でシームレスにクエリできるようにします。
 
-### Gateway
+### ゲートウェイ
 
-The federation gateway is the entry point to your distributed data graph. It presents a unified
-GraphQL endpoint to clients and handles the complexity of routing queries to the appropriate
-subgraphs and assembling the results, and often provides caching and performance optimizations.
+フェデレーションゲートウェイは、分散データグラフへのエントリーポイントです。クライアントに統一されたGraphQLエンドポイントを提示し、適切なサブグラフへのクエリのルーティングと結果の組み立ての複雑さを処理し、多くの場合、キャッシングとパフォーマンスの最適化を提供します。
 
 ```mermaid
 graph TD
@@ -178,18 +145,18 @@ graph TD
   ProductsService[Products Service]
 ```
 
-Take the following query as an example:
+次のクエリを例として見てみましょう：
 
 ```graphql
 query {
   user(id: "123") {
-    # Resolved by Users subgraph
+    # Usersサブグラフによって解決される
     name
     orders {
-      # Resolved by Orders subgraph
+      # Ordersサブグラフによって解決される
       id
       products {
-        # Resolved by Products subgraph
+        # Productsサブグラフによって解決される
         title
         price
       }
@@ -198,74 +165,46 @@ query {
 }
 ```
 
-The gateway will route parts of the query to the appropriate subgraphs, collect the results, and
-assemble them into a single response that the client can consume.
+ゲートウェイは、クエリの一部を適切なサブグラフにルーティングし、結果を収集し、クライアントが消費できる単一のレスポンスに組み立てます。
 
-## Benefits of GraphQL federation
+## GraphQLフェデレーションの利点
 
-### Domain-driven development
+### ドメイン駆動開発
 
-Teams can work independently on their services while contributing to a cohesive API. This autonomy
-accelerates development and reduces coordination overhead.
+チームは、まとまりのあるAPIに貢献しながら、サービスで独立して作業できます。この自律性は開発を加速し、調整のオーバーヘッドを減らします。
 
-### Service integrity protection
+### サービス整合性の保護
 
-The schema composition step verifies integration between services by ensuring that changes in
-individual subgraphs do not conflict with other subgraphs.
+スキーマ構成ステップは、個々のサブグラフの変更が他のサブグラフと競合しないことを確認することで、サービス間の統合を検証します。
 
-### Scalability and performance
+### スケーラビリティとパフォーマンス
 
-Subgraphs and services can be scaled independently based on their specific requirements. The product
-catalog might need different scaling characteristics than the order processing system.
+サブグラフとサービスは、特定の要件に基づいて独立してスケールできます。製品カタログは、注文処理システムとは異なるスケーリング特性が必要な場合があります。
 
-### Single, unified API
+### 単一の統一されたAPI
 
-Thanks to GraphQL, clients get a single endpoint with unified schema spanning multiple subgraphs.
-The complexity of distributed systems is hidden. The gateway ensures every query reaches its
-destination and returns with the right data.
+GraphQLのおかげで、クライアントは複数のサブグラフにまたがる統一されたスキーマを持つ単一のエンドポイントを取得します。分散システムの複雑さは隠されています。ゲートウェイは、すべてのクエリがその宛先に到達し、適切なデータで返されることを保証します。
 
-## Is GraphQL federation right for you?
+## GraphQLフェデレーションはあなたに適していますか？
 
-GraphQL federation aligns naturally with Domain Driven Design (DDD) principles by allowing teams to
-maintain clear boundaries around their domains, while maintaining explicit integration points
-through the GraphQL schema. It is particularly valuable for organizations where multiple teams need
-to work independently on different parts of the GraphQL API, with the flexibility to use different
-technologies and programming languages.
+GraphQLフェデレーションは、チームがドメインの周りに明確な境界を維持しながら、GraphQLスキーマを通じて明示的な統合ポイントを維持できるようにすることで、ドメイン駆動設計（DDD）の原則と自然に一致します。複数のチームが異なる技術とプログラミング言語を使用する柔軟性を持って、GraphQL APIの異なる部分で独立して作業する必要がある組織にとって特に価値があります。
 
-However, implementing federation requires substantial infrastructure support, including a dedicated
-team to manage the gateway, schema registry, to help connect subgraphs to the federated API and
-guide teams on best practices.
+ただし、フェデレーションの実装には、ゲートウェイ、スキーマレジストリを管理し、サブグラフをフェデレーションAPIに接続し、チームにベストプラクティスを指導する専用チームを含む、実質的なインフラストラクチャサポートが必要です。
 
-Before adopting federation, it's crucial to consider whether your organization truly needs this
-level of complexity. You can start with a monolithic setup and transition to federation as your needs
-evolve, rather than implementing it prematurely.
+フェデレーションを採用する前に、組織が本当にこのレベルの複雑さを必要としているかどうかを考慮することが重要です。モノリシックなセットアップから始めて、ニーズに応じてフェデレーションに移行することができ、時期尚早に実装するのではなく、ニーズに応じて移行できます。
 
-Meta (formerly Facebook), [where GraphQL was created](/blog/2015-09-14-graphql/), has continued to
-use a monolithic GraphQL API since 2012. However, companies like
-[Netflix](https://netflixtechblog.com/how-netflix-scales-its-api-with-graphql-federation-part-1-ae3557c187e2),
-[Expedia Group](https://youtu.be/kpeVT7J6Bsw?si=srGWsoxf3kTmneTu&t=79),
-[Volvo](https://www.apollographql.com/blog/volvo-cars-drives-into-the-future-of-online-car-shopping-with-the-supergraph),
-and [Booking](https://youtu.be/2KsP_x50tGk?si=mu-MOG-xZQSDNDjh&t=478) have adopted federation to
-better align with their organizational structures and microservices architecture.
+Meta（旧Facebook）、[GraphQLが作成された場所](/blog/2015-09-14-graphql/)は、2012年以来、モノリシックなGraphQL APIの使用を続けています。しかし、[Netflix](https://netflixtechblog.com/how-netflix-scales-its-api-with-graphql-federation-part-1-ae3557c187e2)、[Expedia Group](https://youtu.be/kpeVT7J6Bsw?si=srGWsoxf3kTmneTu&t=79)、[Volvo](https://www.apollographql.com/blog/volvo-cars-drives-into-the-future-of-online-car-shopping-with-the-supergraph)、[Booking](https://youtu.be/2KsP_x50tGk?si=mu-MOG-xZQSDNDjh&t=478)などの企業は、組織構造とマイクロサービスアーキテクチャにより適したフェデレーションを採用しています。
 
-As you see, some of the world's largest industry leaders have successfully federated their GraphQL
-APIs, proving that it works reliably for production applications at an extraordinary scale.
+ご覧のとおり、世界最大の業界リーダーの一部は、GraphQL APIを正常にフェデレーション化しており、それが並外れた規模の本番アプリケーションで信頼性高く機能することを証明しています。
 
-## Getting started with GraphQL federation
+## GraphQLフェデレーションの開始
 
-If you're considering adopting GraphQL federation, here are some steps to get started:
+GraphQLフェデレーションの採用を検討している場合、開始するためのいくつかのステップを次に示します：
 
-1. **Identify Service Boundaries**: Define clear boundaries between different domains in your
-   application
-2. [**Design Schemas**](/learn/schema/ 'Learn about the different elements of the GraphQL type system'):
-   Create schemas that reflect these boundaries while considering how they'll interact
-3. [**Implement Subgraphs**](/community/tools-and-libraries/?tags=server 'Discover a list of GraphQL servers in our Tools and Libraries page'):
-   Build individual services that implement their portion of the schema
-4. [**Set Up a Gateway**](/community/tools-and-libraries/?tags=gateways-supergraphs 'Discover a list of GraphQL gateways in our Tools and Libraries page'):
-   Deploy a federation gateway to compose and serve the unified schema
-5. [**Use a Schema Registry**](/community/tools-and-libraries/?tags=schema-registry 'Discover a list of GraphQL schema registries in our Tools and Libraries page'):
-   Manage schema composition and validation to ensure integrity across subgraphs
+1. **サービス境界の識別**: アプリケーション内の異なるドメイン間の明確な境界を定義する
+2. [**スキーマの設計**](/learn/schema/ 'GraphQL型システムの異なる要素について学ぶ'): それらがどのように相互作用するかを考慮しながら、これらの境界を反映するスキーマを作成する
+3. [**サブグラフの実装**](/community/tools-and-libraries/?tags=server 'Tools and LibrariesページでGraphQLサーバーのリストを発見する'): スキーマの一部を実装する個別のサービスを構築する
+4. [**ゲートウェイのセットアップ**](/community/tools-and-libraries/?tags=gateways-supergraphs 'Tools and LibrariesページでGraphQLゲートウェイのリストを発見する'): 統一されたスキーマを構成して提供するフェデレーションゲートウェイをデプロイする
+5. [**スキーマレジストリの使用**](/community/tools-and-libraries/?tags=schema-registry 'Tools and LibrariesページでGraphQLスキーマレジストリのリストを発見する'): サブグラフ間の整合性を確保するためにスキーマ構成と検証を管理する
 
-When migrating from a monolithic to federated GraphQL API, the simplest starting point is to treat
-your existing schema as your first subgraph. From there, you can follow the steps above to gradually
-decompose your schema into smaller pieces.
+モノリシックなGraphQL APIからフェデレーションGraphQL APIに移行する場合、最も簡単な出発点は、既存のスキーマを最初のサブグラフとして扱うことです。そこから、上記のステップに従って、スキーマを徐々に小さな部分に分解できます。

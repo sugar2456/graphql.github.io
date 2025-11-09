@@ -1,14 +1,14 @@
 import { Callout } from "nextra/components"
 
-# Queries
+# クエリ
 
-<p className="learn-subtitle">Learn how to fetch data from a GraphQL server</p>
+<p className="learn-subtitle">GraphQLサーバーからデータを取得する方法を学ぶ</p>
 
-GraphQL supports three main operation types—queries, mutations, and subscriptions. We have already seen several examples of basic queries in this guide, and on this page, you'll learn in detail how to use the various features of query operations to read data from a server.
+GraphQLは3つの主要な操作タイプ（クエリ、ミューテーション、サブスクリプション）をサポートしています。このガイドではすでに基本的なクエリの例をいくつか見てきましたが、このページでは、クエリ操作のさまざまな機能を使用してサーバーからデータを読み取る方法について詳しく学びます。
 
-## Fields
+## フィールド
 
-At its simplest, GraphQL is about asking for specific [fields](https://spec.graphql.org/draft/#sec-Language.Fields) on objects. Let's start by looking at the `hero` field that's defined on the `Query` type in the schema:
+最もシンプルに言えば、GraphQLはオブジェクトに対して特定の[フィールド](https://spec.graphql.org/draft/#sec-Language.Fields)を要求することです。スキーマの`Query`型に定義されている`hero`フィールドを見ることから始めましょう：
 
 ```graphql
 type Query {
@@ -16,7 +16,7 @@ type Query {
 }
 ```
 
-We can see what result we get when we query it:
+クエリを実行すると、どのような結果が得られるか見てみましょう：
 
 ```graphql
 # { "graphiql": true }
@@ -27,11 +27,11 @@ We can see what result we get when we query it:
 }
 ```
 
-When creating a GraphQL _document_ we always start with a [root operation type](/learn/schema/#the-query-mutation-and-subscription-types) (the `Query` Object type for this example) because it serves as an entry point to the API. From there we must specify the _selection set_ of fields we are interested in, all the way down to their leaf values which will be Scalar or Enum types. The field `name` returns a `String` type, in this case the name of the main hero of Star Wars, `"R2-D2"`.
+GraphQLの_ドキュメント_を作成する際は、常に[ルート操作タイプ](/learn/schema/#the-query-mutation-and-subscription-types)（この例では`Query`オブジェクト型）から始めます。これはAPIのエントリーポイントとして機能するためです。そこから、興味のあるフィールドの_セレクションセット_を指定し、ScalarまたはEnum型であるリーフ値まで指定する必要があります。`name`フィールドは`String`型を返します。この場合、スター・ウォーズの主人公の名前である`"R2-D2"`です。
 
-The GraphQL specification indicates that a request's result will be returned on a top-level `data` key in the response. If the request raised any errors, there will be information about what went wrong on a top-level `errors` key. From there, you can see that the result has the same shape as the query. This is essential to GraphQL, because you always get back what you expect, and the server knows exactly what fields the client is asking for.
+GraphQL仕様では、リクエストの結果はレスポンスのトップレベルの`data`キーで返されることが示されています。リクエストでエラーが発生した場合、トップレベルの`errors`キーに何が間違っていたかについての情報が含まれます。そこから、結果がクエリと同じ形状を持っていることがわかります。これはGraphQLにとって不可欠です。なぜなら、常に期待通りのものが返され、サーバーはクライアントが要求しているフィールドを正確に把握しているからです。
 
-In the previous example, we just asked for the name of our hero which returned a `String`, but fields can also return Object types (and lists thereof). In that case, you can make a _sub-selection_ of fields for that Object type:
+前の例では、ヒーローの名前を要求しただけで、`String`が返されましたが、フィールドはオブジェクト型（およびそのリスト）を返すこともできます。その場合、そのオブジェクト型のフィールドの_サブセレクション_を行うことができます：
 
 ```graphql
 # { "graphiql": true }
@@ -45,13 +45,13 @@ In the previous example, we just asked for the name of our hero which returned a
 }
 ```
 
-GraphQL queries can traverse related objects and their fields, letting clients fetch lots of related data in one request, instead of making several roundtrips as one would need in a classic REST architecture.
+GraphQLクエリは関連するオブジェクトとそのフィールドをトラバースでき、クライアントは古典的なRESTアーキテクチャで必要とされる複数の往復を行う代わりに、1回のリクエストで多くの関連データを取得できます。
 
-Note that in this example, the `friends` field returns an array of items. GraphQL queries look the same for single items or lists of items; however, we know which one to expect based on what is indicated in the schema.
+この例では、`friends`フィールドがアイテムの配列を返すことに注意してください。GraphQLクエリは、単一のアイテムでもアイテムのリストでも同じように見えます。ただし、スキーマに示されているものに基づいて、どちらを期待するかがわかります。
 
-## Arguments
+## 引数
 
-If the only thing we could do was traverse objects and their fields, GraphQL would already be a very useful language for data fetching. But when you add the ability to pass [arguments](https://spec.graphql.org/draft/#sec-Language.Arguments) to fields, things get much more interesting:
+オブジェクトとそのフィールドをトラバースすることしかできなかったとしても、GraphQLはすでにデータ取得にとって非常に便利な言語でしょう。しかし、フィールドに[引数](https://spec.graphql.org/draft/#sec-Language.Arguments)を渡す機能を追加すると、はるかに興味深いものになります：
 
 ```graphql
 type Query {
@@ -59,7 +59,7 @@ type Query {
 }
 ```
 
-The client must then provide the required `id` value with the query:
+クライアントは、クエリと共に必要な`id`値を提供する必要があります：
 
 ```graphql
 # { "graphiql": true }
@@ -71,9 +71,9 @@ The client must then provide the required `id` value with the query:
 }
 ```
 
-In a system like REST, you can only pass a single set of arguments—the query parameters and URL segments in your request. But in GraphQL, every field and nested object can get its own set of arguments, making GraphQL a complete replacement for making multiple API fetches. 
+RESTのようなシステムでは、単一の引数セット（リクエスト内のクエリパラメータとURLセグメント）のみを渡すことができます。しかしGraphQLでは、すべてのフィールドとネストされたオブジェクトが独自の引数セットを持つことができ、GraphQLは複数のAPI取得を完全に置き換えるものになります。
 
-You can even pass arguments into fields that output Scalar types; one use case for this would be to implement data transformations once on the server, instead of on every client separately:
+Scalar型を出力するフィールドに引数を渡すこともできます。この使用例の1つは、すべてのクライアントで個別に行うのではなく、サーバー側で一度データ変換を実装することです：
 
 ```graphql
 # { "graphiql": true }
@@ -85,15 +85,15 @@ You can even pass arguments into fields that output Scalar types; one use case f
 }
 ```
 
-Arguments can be of many different types. In the above example, we have used an Enum type, which represents one of a finite set of options (in this case, units of length, either `METER` or `FOOT`). GraphQL comes with a [default set of types](/learn/schema/#scalar-types), but a GraphQL server can also declare custom types, as long as they can be serialized into your transport format.
+引数は多くの異なる型を持つことができます。上記の例では、有限のオプションセットの1つを表すEnum型を使用しています（この場合、長さの単位、`METER`または`FOOT`のいずれか）。GraphQLには[デフォルトの型セット](/learn/schema/#scalar-types)が付属していますが、GraphQLサーバーは、トランスポート形式にシリアライズできる限り、カスタム型を宣言することもできます。
 
-[Read more about the GraphQL type system here.](/learn/schema)
+[GraphQL型システムの詳細については、こちらをご覧ください。](/learn/schema)
 
-## Operation type and name
+## 操作タイプと名前
 
-In the examples above we have been using a shorthand syntax where we omit the `query` keyword before the operation's selection set. In addition to specifying the _operation type_ explicitly, we can also add a unique _operation name_, which is useful in production apps because it makes debugging and tracing easier.
+上記の例では、操作のセレクションセットの前に`query`キーワードを省略する省略構文を使用してきました。_操作タイプ_を明示的に指定することに加えて、一意の_操作名_を追加することもできます。これは本番アプリで便利です。なぜなら、デバッグとトレースが容易になるからです。
 
-Here’s an example that includes the `query` keyword as the operation type and `HeroNameAndFriends` as the operation name:
+次は、操作タイプとして`query`キーワード、操作名として`HeroNameAndFriends`を含む例です：
 
 ```graphql
 # { "graphiql": true }
@@ -107,15 +107,15 @@ query HeroNameAndFriends {
 }
 ```
 
-The operation type is either `query`, `mutation`, or `subscription` and describes what type of operation you intend to do. This keyword is required unless you're using the shorthand syntax for queries (it is always required for mutations and subscriptions). Additionally, if you wish to provide a name for your operation, then you must specify the operation type as well.
+操作タイプは`query`、`mutation`、または`subscription`のいずれかで、実行しようとしている操作のタイプを記述します。このキーワードは、クエリの省略構文を使用している場合を除いて必須です（ミューテーションとサブスクリプションでは常に必須です）。さらに、操作に名前を付けたい場合は、操作タイプも指定する必要があります。
 
-The operation name is an explicit name that you assign to your operation; you should pick a meaningful name. It is required when sending multiple operations in one document, but even if you're only sending one operation it's encouraged because operation names are helpful for debugging and server-side logging. When something goes wrong (you see errors either in your network logs or in the logs of your GraphQL server) it is easier to identify a query in your codebase by name instead of trying to decipher the contents.
+操作名は、操作に割り当てる明示的な名前です。意味のある名前を選択する必要があります。1つのドキュメントで複数の操作を送信する場合は必須ですが、1つの操作のみを送信する場合でも、操作名はデバッグとサーバーサイドのログ記録に役立つため、推奨されます。何か問題が発生した場合（ネットワークログまたはGraphQLサーバーのログにエラーが表示される場合）、内容を解読しようとするのではなく、名前でコードベース内のクエリを識別する方が簡単です。
 
-Think of this just like a function name in your favorite programming language. For example, in JavaScript, we can easily work only with anonymous functions, but when we give a function a name, it's easier to track it down, debug our code, and log when it's called. In the same way, GraphQL query and mutation names, along with fragment names, can be a useful debugging tool on the server side to identify different GraphQL requests.
+お気に入りのプログラミング言語の関数名のようなものと考えてください。たとえば、JavaScriptでは、無名関数のみで簡単に作業できますが、関数に名前を付けると、追跡、コードのデバッグ、呼び出されたときのログ記録が容易になります。同様に、GraphQLのクエリとミューテーションの名前、およびフラグメント名は、サーバー側で異なるGraphQLリクエストを識別するための便利なデバッグツールになります。
 
-## Aliases
+## エイリアス
 
-If you have a sharp eye, you may have noticed that, since the result object fields match the name of the fields in the query but don't include arguments, you can't directly query for the same field with different arguments. That's why you need [aliases](https://spec.graphql.org/draft/#sec-Field-Alias)—they let you rename the result of a field to anything you want.
+鋭い目をお持ちの方は、結果オブジェクトフィールドがクエリ内のフィールドの名前と一致するが引数を含まないため、異なる引数で同じフィールドを直接クエリできないことに気付いたかもしれません。そのため、[エイリアス](https://spec.graphql.org/draft/#sec-Field-Alias)が必要です。これにより、フィールドの結果を任意の名前に変更できます。
 
 ```graphql
 # { "graphiql": true }
@@ -129,21 +129,21 @@ query {
 }
 ```
 
-In the above example, the two `hero` fields would have conflicted, but since we can alias them to different names, we can get both results in one request.
+上記の例では、2つの`hero`フィールドが衝突しますが、異なる名前にエイリアスできるため、1つのリクエストで両方の結果を取得できます。
 
-## Variables
+## 変数
 
-So far, we have been writing all of our arguments inside the query string. But in most applications, the arguments to fields will be dynamic. For example, there might be a dropdown that lets you select which Star Wars episode you are interested in, or a search field, or a set of filters.
+これまで、すべての引数をクエリ文字列内に記述してきました。しかし、ほとんどのアプリケーションでは、フィールドへの引数は動的になります。たとえば、興味のあるスター・ウォーズのエピソードを選択できるドロップダウン、検索フィールド、またはフィルタのセットがある場合があります。
 
-It wouldn't be a good idea to pass these dynamic arguments directly in the query string, because then our client-side code would need to dynamically manipulate the query string at runtime, and serialize it into a GraphQL-specific format. Instead, GraphQL has a first-class way to factor dynamic values out of the query and pass them as a separate dictionary. These values are called [variables](https://spec.graphql.org/draft/#sec-Language.Variables).
+これらの動的引数をクエリ文字列に直接渡すのは良い考えではありません。なぜなら、クライアント側のコードが実行時にクエリ文字列を動的に操作し、GraphQL固有の形式にシリアライズする必要があるからです。代わりに、GraphQLには、動的値をクエリから切り出し、別の辞書として渡すファーストクラスの方法があります。これらの値は[変数](https://spec.graphql.org/draft/#sec-Language.Variables)と呼ばれます。
 
-When we start working with variables, we need to do three things:
+変数を使い始めると、次の3つのことを行う必要があります：
 
-1. Replace the static value in the query with `$variableName`
-2. Declare `$variableName` as one of the variables accepted by the query
-3. Pass `variableName: value` in the separate, transport-specific (usually JSON) variables dictionary
+1. クエリ内の静的値を`$variableName`に置き換えます
+2. `$variableName`をクエリが受け入れる変数の1つとして宣言します
+3. トランスポート固有の（通常はJSON）変数辞書で`variableName: value`を渡します
 
-Here's what it looks like all together:
+すべてをまとめると、次のようになります：
 
 ```graphql
 # { "graphiql": true, "variables": { "episode": "JEDI" } }

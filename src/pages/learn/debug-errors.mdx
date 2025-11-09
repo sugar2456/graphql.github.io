@@ -1,98 +1,84 @@
-# Common HTTP Errors and How to Debug Them
+# 一般的なHTTPエラーとそのデバッグ方法
 
-When building or consuming a GraphQL API over HTTP, it's common to run into
-errors, especially during development. Understanding how to recognize and resolve these issues
-can save you time and frustration.
+HTTP経由でGraphQL APIを構築または消費する際、エラーに遭遇することは一般的です。特に開発中はそうです。これらの問題を認識して解決する方法を理解することで、時間とフラストレーションを節約できます。
 
-This guide outlines common HTTP and GraphQL errors, what they mean, and how to debug them 
-effectively. It follows the recommendations of the
-[GraphQL over HTTP spec (draft)](https://graphql.github.io/graphql-over-http/draft/),
-which standardizes how GraphQL works over HTTP, including request formats, status codes,
-and media types. Keep in mind that implementations may vary, so treat this as a general guide rather
-than a definitive reference.
+このガイドでは、一般的なHTTPエラーとGraphQLエラー、それらの意味、およびそれらを効果的にデバッグする方法について説明します。これは、リクエスト形式、ステータスコード、メディアタイプを含む、GraphQLがHTTP経由でどのように機能するかを標準化する[GraphQL over HTTP仕様（ドラフト）](https://graphql.github.io/graphql-over-http/draft/)の推奨事項に従っています。実装は異なる場合があることに注意してください。そのため、これを決定的なリファレンスではなく、一般的なガイドとして扱ってください。
 
-## `400 Bad Request`: Syntax or parse errors
+## `400 Bad Request`: 構文または解析エラー
 
-### What it means
+### 意味
 
-The server couldn't parse your request. Either the GraphQL query string is malformed,
-or the JSON body isn't valid. This is the primary error status recommended by the GraphQL over HTTP specification.
+サーバーがリクエストを解析できませんでした。GraphQLクエリ文字列が不正であるか、JSON本文が有効ではありません。これは、GraphQL over HTTP仕様で推奨される主要なエラーステータスです。
 
-### Common causes
+### 一般的な原因
 
-- JSON syntax errors
-- Sending a plain string without wrapping it in `{ "query": "..." }`
-- Using `Content-Type: application/graphql` without supporting it
+- JSON構文エラー
+- `{ "query": "..." }`でラップせずにプレーン文字列を送信する
+- サポートされていない`Content-Type: application/graphql`を使用する
 
-### How to debug
+### デバッグ方法
 
-- Validate your JSON body using a linter or formatter.
-- Make sure you're sending a `POST` request with a `Content-Type: application/json` header.
-- Check your GraphQL query for syntax errors. Use an IDE or linter to verify it.
+- リンターまたはフォーマッターを使用してJSON本文を検証します。
+- `Content-Type: application/json`ヘッダーで`POST`リクエストを送信していることを確認します。
+- GraphQLクエリの構文エラーを確認します。IDEまたはリンターを使用して検証します。
 
-## `405 Method Not Allowed`: Wrong HTTP Method
+## `405 Method Not Allowed`: 間違ったHTTPメソッド
 
-### What it means
+### 意味
 
-You're using an unsupported HTTP method. Most GraphQL servers require `POST` for mutations
-and may allow `GET` for queries.
+サポートされていないHTTPメソッドを使用しています。ほとんどのGraphQLサーバーは、ミューテーションに`POST`を要求し、クエリに`GET`を許可する場合があります。
 
-### Common causes
+### 一般的な原因
 
-- Sending a `PUT` or `DELETE` request instead of `POST` or `GET`
-- Sending a `GET` request for a mutation, or to a server that only supports `POST` requests
+- `POST`または`GET`の代わりに`PUT`または`DELETE`リクエストを送信する
+- ミューテーションに対して`GET`リクエストを送信する、または`POST`リクエストのみをサポートするサーバーに送信する
 
-### How to debug
+### デバッグ方法
 
-- Check your HTTP method. Mutations must use `POST`.
-- Make sure your server supports `GET` for queries.
-- Refer to the [GraphQL over HTTP spec](https://graphql.github.io/graphql-over-http/draft/) to 
-confirm method support.
+- HTTPメソッドを確認します。ミューテーションは`POST`を使用する必要があります。
+- サーバーがクエリに対して`GET`をサポートしていることを確認します。
+- メソッドのサポートを確認するために[GraphQL over HTTP仕様](https://graphql.github.io/graphql-over-http/draft/)を参照してください。
 
-## `500 Internal Server Error`: Unexpected server failures
+## `500 Internal Server Error`: 予期しないサーバー障害
 
-### What it means
+### 意味
 
-Something went wrong on the server. 
+サーバーで何かが間違っています。
 
-### Common causes
+### 一般的な原因
 
-- An unhandled exception in a resolver
-- Schema validation issues during server startup
-- Missing or misconfigured middleware
+- リゾルバでの未処理の例外
+- サーバー起動時のスキーマ検証の問題
+- 欠落または誤設定されたミドルウェア
 
-### How to debug
+### デバッグ方法
 
-- Check server logs or stack traces.
-- Add error handling to resolvers.
+- サーバーログまたはスタックトレースを確認します。
+- リゾルバにエラーハンドリングを追加します。
 
-## GraphQL errors with `200 OK`
+## `200 OK`のGraphQLエラー
 
-### What it means
+### 意味
 
-The HTTP layer succeeded, but the GraphQL operation produced errors.
+HTTP層は成功しましたが、GraphQL操作でエラーが発生しました。
 
-### Common causes
+### 一般的な原因
 
-- Runtime errors during execution
-- Violating schema constraints (e.g. returning the wrong data type, or `null` in a non-nullable position)
+- 実行中のランタイムエラー
+- スキーマ制約の違反（例：間違ったデータ型を返す、または非null許容位置で`null`を返す）
 
-Older servers and clients (those not using
-`Content-Type: application/graphql-response+json`) may also use 200 OK in the case of
-complete request failure (no `data`). Common causes include:
+古いサーバーとクライアント（`Content-Type: application/graphql-response+json`を使用していないもの）は、完全なリクエスト失敗（`data`なし）の場合にも200 OKを使用する場合があります。一般的な原因には以下が含まれます：
 
-- Querying a field that doesn't exist
-- Passing incorrect arguments to a field
-- Omitting a selection set on a non-leaf field
-- Failure to specify the `operationName` when multiple operations exist in the request
+- 存在しないフィールドをクエリする
+- フィールドに間違った引数を渡す
+- 非リーフフィールドで選択セットを省略する
+- リクエストに複数の操作が存在する場合に`operationName`を指定しない
 
-### How to debug
+### デバッグ方法
 
-Check the `errors` array in the response body. If the response includes a `data` property, then 
-your query document is likely valid and you most likely hit a runtime exception - perhaps due to
-invalid input, access denial, or a bug in server logic.
+レスポンス本文の`errors`配列を確認します。レスポンスに`data`プロパティが含まれている場合、クエリドキュメントはおそらく有効であり、ランタイム例外に遭遇した可能性が高いです—無効な入力、アクセス拒否、またはサーバーロジックのバグが原因である可能性があります。
 
-If there's no `data` field, the request likely failed during validation. For example:
+`data`フィールドがない場合、リクエストは検証中に失敗した可能性があります。例えば：
 
 ```json
 {
@@ -105,37 +91,26 @@ If there's no `data` field, the request likely failed during validation. For exa
 }
 ```
 
-Use introspection or an IDE to verify your query matches the schema.
+イントロスペクションまたはIDEを使用して、クエリがスキーマと一致することを確認します。
 
-## Implementation-specific status codes
+## 実装固有のステータスコード
 
-Some GraphQL server implementations may use additional HTTP status codes that are not explicitly recommended 
-by the specification. These vary by implementation.
+一部のGraphQLサーバー実装は、仕様で明示的に推奨されていない追加のHTTPステータスコードを使用する場合があります。これらは実装によって異なります。
 
-- `415 Unsupported Media Type`: The server doesn't understand the request's `Content-Type`. This can occur
-when a GraphQL query is sent with `Content-Type: text/plain` or another unsupported type. 
-- `422 Unprocessable Entity`: Some implementations use this for GraphQL validation errors instead of `200` + errors array.
+- `415 Unsupported Media Type`: サーバーがリクエストの`Content-Type`を理解できません。これは、GraphQLクエリが`Content-Type: text/plain`または別のサポートされていないタイプで送信された場合に発生する可能性があります。
+- `422 Unprocessable Entity`: 一部の実装は、`200` + エラー配列の代わりに、GraphQL検証エラーに対してこれを使用します。
 
-These error codes are not recommended by the specification for most cases. Different GraphQL servers handle 
-validation errors differently. When in doubt, use error codes supported by the specification.
+これらのエラーコードは、ほとんどの場合、仕様で推奨されていません。異なるGraphQLサーバーは、検証エラーを異なる方法で処理します。疑問がある場合は、仕様でサポートされているエラーコードを使用してください。
 
-## Understanding GraphQL response formats
+## GraphQLレスポンス形式の理解
 
-Traditionally, GraphQL servers have returned responses using the `application/json` media type.
-However, the [GraphQL over HTTP spec](https://graphql.github.io/graphql-over-http/draft/) recommends 
-that clients request (and servers respond with) a more specific type: `application/graphql-response+json`.
+従来、GraphQLサーバーは`application/json`メディアタイプを使用してレスポンスを返してきました。しかし、[GraphQL over HTTP仕様](https://graphql.github.io/graphql-over-http/draft/)は、クライアントがより具体的なタイプ`application/graphql-response+json`をリクエスト（サーバーが応答）することを推奨しています。
 
-This newer media type identifies the payload as a GraphQL response and helps clients
-distinguish it from other types of JSON, making the response safe to process even if
-it uses a non-2xx status code. A trusted proxy, gateway, or other intermediary
-might describe an error using JSON, but would never do so using `application/graphql-response+json`
-unless it was a valid GraphQL response.
+この新しいメディアタイプは、ペイロードをGraphQLレスポンスとして識別し、クライアントが他の種類のJSONと区別するのに役立ち、非2xxステータスコードを使用している場合でもレスポンスを安全に処理できるようにします。信頼できるプロキシ、ゲートウェイ、またはその他の仲介者は、JSONを使用してエラーを記述する場合がありますが、有効なGraphQLレスポンスでない限り、`application/graphql-response+json`を使用してエラーを記述することはありません。
 
-### What to know
+### 知っておくべきこと
 
-- Servers may respond with `application/graphql-response+json` or
-`application/json`.
-- Clients can request this media type using the `Accept` header: `Accept: application/graphql-response+json, application/json;q=0.9` (prefer the new media type over the old one, but accept both)
-- This content type is recommended, and support for it is growing.
-- If your client uses content negotiation, ensure your server can response with the appropriate
-type or fallback to `application/json`.
+- サーバーは`application/graphql-response+json`または`application/json`で応答する場合があります。
+- クライアントは、`Accept`ヘッダーを使用してこのメディアタイプをリクエストできます：`Accept: application/graphql-response+json, application/json;q=0.9`（古いメディアタイプよりも新しいメディアタイプを優先しますが、両方を受け入れます）
+- このコンテンツタイプは推奨されており、そのサポートは拡大しています。
+- クライアントがコンテンツネゴシエーションを使用する場合、サーバーが適切なタイプで応答できるか、`application/json`にフォールバックできることを確認してください。

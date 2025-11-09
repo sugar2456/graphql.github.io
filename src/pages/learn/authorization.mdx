@@ -1,16 +1,16 @@
-# Authorization
+# 認可
 
-<p className="learn-subtitle">Delegate authorization logic to the business logic layer</p>
+<p className="learn-subtitle">認可ロジックをビジネスロジック層に委譲する</p>
 
-Most APIs will need to secure access to certain types of data depending on who requested it, and GraphQL is no different. GraphQL execution should begin after [authentication](/graphql-js/authentication-and-express-middleware/) middleware confirms the user's identity and passes that information to the GraphQL layer. But after that, you still need to determine if the authenticated user is allowed to view the data provided by the specific fields that were included in the request. On this page, we'll explore how a GraphQL schema can support authorization.
+ほとんどのAPIでは、リクエストしたユーザーに応じて特定の種類のデータへのアクセスを保護する必要があり、GraphQLも例外ではありません。GraphQLの実行は、[認証](/graphql-js/authentication-and-express-middleware/)ミドルウェアがユーザーの身元を確認し、その情報をGraphQL層に渡した後に開始する必要があります。しかし、その後も、認証されたユーザーがリクエストに含まれる特定のフィールドが提供するデータを閲覧する権限があるかどうかを判断する必要があります。このページでは、GraphQLスキーマが認可をサポートする方法について説明します。
 
-## Type and field authorization
+## 型とフィールドの認可
 
-Authorization is a type of business logic that describes whether a given user/session/context has permission to perform an action or see a piece of data. For example:
+認可は、特定のユーザー/セッション/コンテキストがアクションを実行したり、データを閲覧したりする権限があるかどうかを記述するビジネスロジックの一種です。例えば：
 
-_"Only authors can see their drafts"_
+_"作成者のみが自分の下書きを閲覧できる"_
 
-Enforcing this behavior should happen in the [business logic layer](/learn/thinking-in-graphs/#business-logic-layer). Let's consider the following `Post` type defined in a schema:
+この動作の強制は、[ビジネスロジック層](/learn/thinking-in-graphs/#business-logic-layer)で行う必要があります。スキーマで定義された次の`Post`型を考えてみましょう：
  
 ```graphql
 type Post {
@@ -19,13 +19,13 @@ type Post {
 }
 ```
 
-In this example, we can imagine that when a request initially reaches the server, authentication middleware will first check the user's credentials and add information about their identity to the `context` object of the GraphQL request so that this data is available in every field resolver for the duration of its execution.
+この例では、リクエストが最初にサーバーに到達したとき、認証ミドルウェアがまずユーザーの認証情報を確認し、その身元に関する情報をGraphQLリクエストの`context`オブジェクトに追加して、実行期間中にすべてのフィールドリゾルバでこのデータが利用可能になることを想定できます。
 
-If a post's body should only be visible to the user who authored it, then we will need to check that the authenticated user's ID matches the post's `authorId` value. It may be tempting to place authorization logic in the resolver for the post's `body` field like so:
+投稿の本文が、その投稿を作成したユーザーにのみ表示されるべきである場合、認証されたユーザーのIDが投稿の`authorId`値と一致するかどうかを確認する必要があります。投稿の`body`フィールドのリゾルバに認可ロジックを配置したくなるかもしれません：
 
 ```js
 function Post_body(obj, args, context, info) {
-  // Return the post body only if the user is the post's author
+  // ユーザーが投稿の作成者である場合のみ、投稿の本文を返す
   if (context.user && context.user.id === obj.authorId) {
     return obj.body;
   }
@@ -33,12 +33,12 @@ function Post_body(obj, args, context, info) {
 }
 ```
 
-Notice that we define "author owns a post" by checking whether the post's `authorId` field equals the current user’s `id`. Can you spot the problem? We would need to duplicate this code for each entry point into the service. Then if the authorization logic is not kept perfectly in sync, users could see different data depending on which API they use. Yikes! We can avoid that by having a [single source of truth](/learn/thinking-in-graphs/#business-logic-layer) for authorization, instead of putting it in the GraphQL layer.
+「作成者が投稿を所有している」ことを、投稿の`authorId`フィールドが現在のユーザーの`id`と等しいかどうかを確認することで定義していることに注意してください。問題点がわかりますか？サービスの各エントリーポイントでこのコードを重複させる必要があります。その後、認可ロジックが完全に同期されていない場合、ユーザーは使用するAPIに応じて異なるデータを閲覧できる可能性があります。これは避けるべきです！GraphQL層に配置するのではなく、認可の[単一の情報源](/learn/thinking-in-graphs/#business-logic-layer)を持つことで、これを回避できます。
 
-Defining authorization logic inside the resolver is fine when learning GraphQL or prototyping. However, for a production codebase, delegate authorization logic to the business logic layer. Here’s an example of how authorization of the `Post` type's fields could be implemented separately:
+リゾルバ内で認可ロジックを定義することは、GraphQLを学習したりプロトタイプを作成したりする際には問題ありません。しかし、本番コードベースでは、認可ロジックをビジネスロジック層に委譲してください。`Post`型のフィールドの認可を別々に実装する方法の例を次に示します：
 
 ```js
-// Authorization logic lives inside `postRepository`
+// 認可ロジックは`postRepository`内に存在する
 export const postRepository = {
   getBody({ user, post }) {
     const isAuthor = user?.id === post.authorId;
@@ -47,13 +47,13 @@ export const postRepository = {
 };
 ```
 
-The resolver function for the post's `body` field would then call a `postRepository` method instead of implementing the authorization logic directly:
+投稿の`body`フィールドのリゾルバ関数は、認可ロジックを直接実装するのではなく、`postRepository`メソッドを呼び出すようになります：
 
 ```js
 import { postRepository } from "postRepository";
 
 function resolvePostBody(obj, args, context, info) {
-  // Return the post body only if the user is the post's author
+  // ユーザーが投稿の作成者である場合のみ、投稿の本文を返す
   return postRepository.getBody({
     user: context.user,
     post: obj,
@@ -61,13 +61,13 @@ function resolvePostBody(obj, args, context, info) {
 }
 ```
 
-In the example above, we see that the business logic layer requires the caller to provide a user object, which is available in the `context` object for the GraphQL request. We recommend passing a fully-hydrated user object instead of an opaque token or API key to your business logic layer. This way, we can handle the distinct concerns of [authentication](/graphql-js/authentication-and-express-middleware/) and authorization in different stages of the request processing pipeline.
+上記の例では、ビジネスロジック層が呼び出し元にユーザーオブジェクトを提供することを要求しており、これはGraphQLリクエストの`context`オブジェクトで利用可能です。不透明なトークンやAPIキーではなく、完全にハイドレートされたユーザーオブジェクトをビジネスロジック層に渡すことをお勧めします。このようにすることで、[認証](/graphql-js/authentication-and-express-middleware/)と認可という異なる関心事を、リクエスト処理パイプラインの異なる段階で処理できます。
 
-## Using type system directives
+## 型システムディレクティブの使用
 
-In the example above, we saw how authorization logic can be delegated to the business logic layer through a function that is called in a field resolver. In general, it is recommended to perform all authorization logic in that layer, but if you decide to implement authorization in the GraphQL layer instead then one approach is to use [type system directives](/learn/schema/#directives).
+上記の例では、フィールドリゾルバで呼び出される関数を通じて認可ロジックをビジネスロジック層に委譲する方法を見ました。一般的に、すべての認可ロジックをその層で実行することが推奨されますが、代わりにGraphQL層で認可を実装することを決定した場合、1つのアプローチは[型システムディレクティブ](/learn/schema/#directives)を使用することです。
 
-For example, a directive such as `@auth` could be defined in the schema with arguments that indicate what roles or permissions a user must have to access the data provided by the types and fields where the directive is applied:
+例えば、`@auth`のようなディレクティブをスキーマで定義し、ディレクティブが適用される型とフィールドが提供するデータにアクセスするためにユーザーが持つ必要があるロールや権限を示す引数を持つことができます：
 
 ```graphql
 directive @auth(rule: Rule) on FIELD_DEFINITION
@@ -82,12 +82,12 @@ type Post {
 }
 ```
 
-It would be up to the GraphQL implementation to determine how an `@auth` directive affects execution when a client makes a request that includes the `body` field for `Post` type. However, the authorization logic should remain delegated to the business logic layer.
+クライアントが`Post`型の`body`フィールドを含むリクエストを行う場合、`@auth`ディレクティブが実行にどのように影響するかを決定するのは、GraphQL実装次第です。ただし、認可ロジックはビジネスロジック層に委譲されたままである必要があります。
 
-## Recap
+## まとめ
 
-To recap these recommendations for authorization in GraphQL:
+GraphQLでの認可に関するこれらの推奨事項をまとめると：
 
-- Authorization logic should be delegated to the business logic layer, not the GraphQL layer
-- After execution begins, a GraphQL server should make decisions about whether the client that made the request is authorized to access data for the included fields
-- Type system directives may be defined and added to the types and fields in a schema to apply generalized authorization rules
+- 認可ロジックはGraphQL層ではなく、ビジネスロジック層に委譲する必要があります
+- 実行が開始された後、GraphQLサーバーは、リクエストを行ったクライアントが含まれるフィールドのデータにアクセスする権限があるかどうかを判断する必要があります
+- 一般化された認可ルールを適用するために、型システムディレクティブを定義してスキーマの型とフィールドに追加することができます

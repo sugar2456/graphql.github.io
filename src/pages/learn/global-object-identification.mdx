@@ -1,17 +1,12 @@
-# Global Object Identification
+# グローバルオブジェクト識別
 
-> Consistent object access enables simple caching and object lookups
+> 一貫したオブジェクトアクセスにより、シンプルなキャッシングとオブジェクトルックアップが可能になります
 
-To provide options for GraphQL clients to elegantly handle caching and data
-refetching, GraphQL servers need to expose object identifiers in a standardized
-way.
+GraphQLクライアントがキャッシングとデータの再取得をエレガントに処理するためのオプションを提供するために、GraphQLサーバーは標準化された方法でオブジェクト識別子を公開する必要があります。
 
-For this to work, a client will need to query via a standard mechanism to
-request an object by ID. Then, in the response, the schema will need to provide a
-standard way of providing these IDs.
+これを機能させるために、クライアントは標準的なメカニズムを介してIDでオブジェクトをリクエストする必要があります。その後、レスポンスで、スキーマはこれらのIDを提供する標準的な方法を提供する必要があります。
 
-Because little is known about the object other than its ID, we call these
-objects "nodes." Here is an example query for a node:
+ID以外にオブジェクトについてほとんど知られていないため、これらのオブジェクトを「ノード」と呼びます。ノードのクエリの例を次に示します：
 
 ```graphql
 {
@@ -24,59 +19,50 @@ objects "nodes." Here is an example query for a node:
 }
 ```
 
-- The GraphQL schema is formatted to allow fetching any object via the `node` field on the root query object. This
-  returns objects which conform to a "Node" [interface](/learn/schema/#interfaces).
-- The `id` field can be extracted out of the response safely, and can be stored for re-use via caching and refetching.
-- Clients can use interface fragments to extract additional information specific to the type which conform to the node interface. In this case a "User".
+- GraphQLスキーマは、ルートクエリオブジェクトの`node`フィールドを介して任意のオブジェクトを取得できるようにフォーマットされています。これは、「Node」[インターフェース](/learn/schema/#interfaces)に準拠するオブジェクトを返します。
+- `id`フィールドは、レスポンスから安全に抽出でき、キャッシングと再取得を介して再利用のために保存できます。
+- クライアントは、インターフェースフラグメントを使用して、ノードインターフェースに準拠する型に固有の追加情報を抽出できます。この場合、「User」です。
 
-The Node interface looks like:
+Nodeインターフェースは次のようになります：
 
 ```graphql
-# An object with a Globally Unique ID
+# グローバルに一意のIDを持つオブジェクト
 interface Node {
-  # The ID of the object.
+  # オブジェクトのID。
   id: ID!
 }
 ```
 
-With a User conforming via:
+Userは次のように準拠します：
 
 ```graphql
 type User implements Node {
   id: ID!
-  # Full name
+  # フルネーム
   name: String!
 }
 ```
 
-## Specification
+## 仕様
 
-Everything below describes with more formal requirements a specification around object
-identification in order to conform to ensure consistency across server implementations. These
-specifications are based on how a server can be compliant with the [Relay][relay] API client, but
-can be useful for any client.
+以下はすべて、サーバー実装間で一貫性を確保するために準拠する必要があるオブジェクト識別に関する仕様を、より正式な要件で説明しています。これらの仕様は、サーバーが[Relay][relay] APIクライアントに準拠する方法に基づいていますが、任意のクライアントにとって有用です。
 
-## Reserved Types
+## 予約された型
 
-A GraphQL server compatible with this spec must reserve certain types and type names
-to support the consistent object identification model. In particular, this spec creates
-guidelines for the following types:
+この仕様に準拠するGraphQLサーバーは、一貫したオブジェクト識別モデルをサポートするために、特定の型と型名を予約する必要があります。特に、この仕様は次の型のガイドラインを作成します：
 
-- An interface named `Node`.
-- The `node` field on the root query type.
+- `Node`という名前のインターフェース。
+- ルートクエリ型の`node`フィールド。
 
-## Node Interface
+## Nodeインターフェース
 
-The server must provide an interface called `Node`. That interface
-must include exactly one field, called `id` that returns a non-null `ID`.
+サーバーは、`Node`という名前のインターフェースを提供する必要があります。そのインターフェースには、非nullの`ID`を返す`id`という名前のフィールドが正確に1つ含まれている必要があります。
 
-This `id` should be a globally unique identifier for this object, and given
-just this `id`, the server should be able to refetch the object.
+この`id`は、このオブジェクトのグローバルに一意の識別子である必要があり、この`id`だけが与えられると、サーバーはオブジェクトを再取得できる必要があります。
 
-### Introspection
+### イントロスペクション
 
-A server that correctly implements the above interface will accept the following
-introspection query, and return the provided response:
+上記のインターフェースを正しく実装するサーバーは、次のイントロスペクションクエリを受け入れ、提供されたレスポンスを返します：
 
 ```graphql
 {
@@ -120,27 +106,17 @@ yields
 }
 ```
 
-## Node root field
+## Nodeルートフィールド
 
-The server must provide a root field called `node` that returns the `Node`
-interface. This root field must take exactly one argument, a non-null ID
-named `id`.
+サーバーは、`Node`インターフェースを返す`node`という名前のルートフィールドを提供する必要があります。このルートフィールドは、`id`という名前の非nullIDである正確に1つの引数を受け取る必要があります。
 
-If a query returns an object that implements `Node`, then this root field
-should refetch the identical object when value returned by the server in the
-`Node`'s `id` field is passed as the `id` parameter to the `node` root field.
+クエリが`Node`を実装するオブジェクトを返す場合、サーバーが`Node`の`id`フィールドで返す値が`node`ルートフィールドの`id`パラメータとして渡されると、このルートフィールドは同じオブジェクトを再取得する必要があります。
 
-The server must make a best effort to fetch this data, but it may not always
-be possible; for example, the server may return a `User` with a valid `id`,
-but when the request is made to refetch that user with the `node` root field,
-the user's database may be unavailable, or the user may have deleted their
-account. In this case, the result of querying this field should be `null`.
+サーバーは、このデータを取得するために最善の努力を払う必要がありますが、常に可能であるとは限りません。例えば、サーバーは有効な`id`を持つ`User`を返す可能性がありますが、`node`ルートフィールドでそのユーザーを再取得するリクエストが行われると、ユーザーのデータベースが利用できないか、ユーザーがアカウントを削除した可能性があります。この場合、このフィールドをクエリした結果は`null`である必要があります。
 
-### Introspection
+### イントロスペクション
 
-A server that correctly implements the above requirement will accept the
-following introspection query, and return a response that contains the
-provided response.
+上記の要件を正しく実装するサーバーは、次のイントロスペクションクエリを受け入れ、提供されたレスポンスを含むレスポンスを返します。
 
 ```graphql
 {
@@ -175,7 +151,7 @@ yields
   "__schema": {
     "queryType": {
       "fields": [
-        // This array may have other entries
+        // この配列には他のエントリが含まれる場合があります
         {
           "name": "node",
           "type": {
@@ -201,24 +177,18 @@ yields
 }
 ```
 
-## Field stability
+## フィールドの安定性
 
-If two objects appear in a query, both implementing `Node` with identical
-IDs, then the two objects must be equal.
+2つのオブジェクトがクエリに表示され、両方とも同じIDで`Node`を実装している場合、2つのオブジェクトは等しくなければなりません。
 
-For the purposes of this definition, object equality is defined as follows:
+この定義の目的のために、オブジェクトの等価性は次のように定義されます：
 
-- If a field is queried on both objects, the result of querying that field on
-  the first object must be equal to the result of querying that field on the
-  second object.
-  - If the field returns a scalar, equality is defined as is appropriate for
-    that scalar.
-  - If the field returns an enum, equality is defined as both fields returning
-    the same enum value.
-  - If the field returns an object, equality is defined recursively as per the
-    above.
+- フィールドが両方のオブジェクトでクエリされる場合、最初のオブジェクトでそのフィールドをクエリした結果は、2番目のオブジェクトでそのフィールドをクエリした結果と等しくなければなりません。
+  - フィールドがスカラーを返す場合、等価性はそのスカラーに適切に定義されます。
+  - フィールドが列挙型を返す場合、等価性は両方のフィールドが同じ列挙値を返すこととして定義されます。
+  - フィールドがオブジェクトを返す場合、等価性は上記のように再帰的に定義されます。
 
-For example:
+例えば：
 
 ```graphql
 {
@@ -268,14 +238,11 @@ might return:
 }
 ```
 
-Because `fourNode.id` and `fiveNode.userWithIdOneLess.id` are the same, we are
-guaranteed by the conditions above that `fourNode.name` must be the same as
-`fiveNode.userWithIdOneLess.name`, and indeed it is.
+`fourNode.id`と`fiveNode.userWithIdOneLess.id`が同じであるため、上記の条件により、`fourNode.name`は`fiveNode.userWithIdOneLess.name`と同じである必要があり、実際にそうなっています。
 
-## Plural identifying root fields
+## 複数形の識別ルートフィールド
 
-Imagine a root field named `username`, that takes a user's username and
-returns the corresponding user:
+ユーザーのユーザー名を受け取り、対応するユーザーを返す`username`という名前のルートフィールドを想像してください：
 
 ```graphql
 {
@@ -295,10 +262,7 @@ might return:
 }
 ```
 
-Clearly, we can link up the object in the response, the user with ID 4,
-with the request, identifying the object with username "zuck". Now imagine a
-root field named `usernames`, that takes a list of usernames and returns a
-list of objects:
+明らかに、レスポンス内のオブジェクト（ID 4のユーザー）を、ユーザー名「zuck」でオブジェクトを識別するリクエストとリンクできます。次に、ユーザー名のリストを受け取り、オブジェクトのリストを返す`usernames`という名前のルートフィールドを想像してください：
 
 ```graphql
 {
@@ -323,43 +287,20 @@ might return:
 }
 ```
 
-For clients to be able to link the usernames to the responses, it needs to
-know that the array in the response will be the same size as the array
-passed as an argument, and that the order in the response will match the
-order in the argument. We call these _plural identifying root fields_, and
-their requirements are described below.
+クライアントがユーザー名をレスポンスにリンクできるようにするには、レスポンス内の配列が引数として渡された配列と同じサイズであり、レスポンス内の順序が引数の順序と一致する必要があることを知る必要があります。これらを_複数形の識別ルートフィールド_と呼び、それらの要件は以下に説明されています。
 
-### Fields
+### フィールド
 
-A server compliant with this spec may expose root fields that accept a list of input
-arguments, and returns a list of responses. For spec-compliant clients to use these fields,
-these fields must be _plural identifying root fields_, and obey the following
-requirements.
+この仕様に準拠するサーバーは、入力引数のリストを受け入れ、レスポンスのリストを返すルートフィールドを公開する場合があります。仕様に準拠するクライアントがこれらのフィールドを使用するには、これらのフィールドは_複数形の識別ルートフィールド_である必要があり、次の要件に従う必要があります。
 
-NOTE Spec-compliant servers may expose root fields that are not _plural
-identifying root fields_; the spec-compliant client will just be unable to use those
-fields as root fields in its queries.
+注意：仕様に準拠するサーバーは、_複数形の識別ルートフィールド_ではないルートフィールドを公開する場合があります。仕様に準拠するクライアントは、クエリでこれらのフィールドをルートフィールドとして使用できません。
 
-_Plural identifying root fields_ must have a single argument. The type of that
-argument must be a non-null list of non-nulls. In our `usernames` example, the
-field would take a single argument named `usernames`, whose type (using our type
-system shorthand) would be `[String!]!`.
+_複数形の識別ルートフィールド_は、単一の引数を持つ必要があります。その引数の型は、非nullの非nullリストである必要があります。`usernames`の例では、フィールドは`usernames`という名前の単一の引数を受け取り、その型（型システムの省略形を使用）は`[String!]!`になります。
 
-The return type of a _plural identifying root field_ must be a list, or a
-non-null wrapper around a list. The list must wrap the `Node` interface, an
-object that implements the `Node` interface, or a non-null wrapper around
-those types.
+_複数形の識別ルートフィールド_の戻り値の型は、リスト、またはリストをラップする非nullラッパーである必要があります。リストは、`Node`インターフェース、`Node`インターフェースを実装するオブジェクト、またはそれらの型をラップする非nullラッパーをラップする必要があります。
 
-Whenever the _plural identifying root field_ is used, the length of the
-list in the response must be the same as the length of the list in the
-arguments. Each item in the response must correspond to its item in the input;
-more formally, if passing the root field an input list `Lin` resulted in output
-value `Lout`, then for an arbitrary permutation `P`, passing the root field
-`P(Lin)` must result in output value `P(Lout)`.
+_複数形の識別ルートフィールド_が使用されるたびに、レスポンス内のリストの長さは、引数内のリストの長さと同じである必要があります。レスポンス内の各項目は、入力内のその項目に対応する必要があります。より正式には、ルートフィールドに入力リスト`Lin`を渡すと出力値`Lout`が得られる場合、任意の順列`P`について、ルートフィールドに`P(Lin)`を渡すと、出力値`P(Lout)`が得られる必要があります。
 
-Because of this, servers are advised to not have the response type
-wrap a non-null wrapper, because if it is unable to fetch the object for
-a given entry in the input, it still must provide a value in the output
-for that input entry; `null` is a useful value for doing so.
+このため、サーバーは、レスポンス型を非nullラッパーでラップしないことをお勧めします。入力内の特定のエントリのオブジェクトを取得できない場合でも、その入力エントリの出力に値を提供する必要があるためです。`null`は、これを行うための有用な値です。
 
 [relay]: https://facebook.github.io/relay/
