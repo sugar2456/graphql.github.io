@@ -158,24 +158,24 @@ query HeroNameAndFriends($episode: Episode) {
 ```
 
 <Callout type="info">
-You must specify an operation type and name in a GraphQL document to use variables.
+変数を使用するには、GraphQLドキュメントで操作タイプと名前を指定する必要があります。
 </Callout>
 
-Now, in our client code, we can simply pass a different variable rather than needing to construct an entirely new query. In general, this is also a good practice for denoting which arguments in our query are expected to be dynamic—we should never be doing string interpolation to construct queries from user-supplied values.
+これで、クライアントコードで、完全に新しいクエリを構築する必要なく、単に異なる変数を渡すことができます。一般的に、これはクエリ内でどの引数が動的であると予想されるかを示すための良い方法でもあります。ユーザー提供の値からクエリを構築するために文字列補間を行うべきではありません。
 
-### Variable definitions
+### 変数定義
 
-The variable definitions are the part that looks like `($episode: Episode)` in the query above. It works just like the argument definitions for a function in a typed language. It lists all of the variables, prefixed by `$`, followed by their type, in this case, `Episode`.
+変数定義は、上記のクエリの`($episode: Episode)`のような部分です。これは、型付き言語の関数の引数定義と同じように機能します。すべての変数を`$`で始まり、その後に型が続くリストとして列挙します。この場合は`Episode`です。
 
-All declared variables must be either Scalar, Enum, or Input Object types. So if you want to pass a complex object into a field, you need to know what [input type](/learn/schema/#input-object-types) matches it on the server.
+宣言されたすべての変数は、Scalar、Enum、またはInput Object型である必要があります。したがって、複雑なオブジェクトをフィールドに渡したい場合は、サーバー上でそれに一致する[入力型](/learn/schema/#input-object-types)を知っておく必要があります。
 
-Variable definitions can be optional or required. In the case above, since there isn't an `!` next to the `Episode` type, it's optional. But if the field you are passing the variable into requires a non-null argument, then the variable has to be required as well.
+変数定義はオプションまたは必須にできます。上記の例では、`Episode`型の横に`!`がないため、オプションです。ただし、変数を渡すフィールドがnull非許容の引数を必要とする場合は、変数も必須である必要があります。
 
-To learn more about the syntax for these variable definitions, it's useful to learn schema definition language (SDL), which is explained in detail on [the Schemas and Types page](/learn/schema).
+これらの変数定義の構文について詳しく学ぶには、スキーマ定義言語（SDL）を学ぶと便利です。これは[スキーマと型のページ](/learn/schema)で詳しく説明されています。
 
-### Default variables
+### デフォルト変数
 
-Default values can also be assigned to the variables in the query by adding the default value after the type declaration:
+型宣言の後にデフォルト値を追加することで、クエリ内の変数にデフォルト値を割り当てることもできます：
 
 ```graphql
 query HeroNameAndFriends($episode: Episode = JEDI) {
@@ -188,13 +188,13 @@ query HeroNameAndFriends($episode: Episode = JEDI) {
 }
 ```
 
-When default values are provided for all variables, you can call the query without passing any variables. If any variables are passed as part of the variables dictionary, they will override the defaults.
+すべての変数にデフォルト値が提供されている場合、変数を渡さずにクエリを呼び出すことができます。変数辞書の一部として変数が渡された場合、それらはデフォルト値を上書きします。
 
-## Fragments
+## フラグメント
 
-Let's say we have a relatively complicated page in our app, which lets us look at two heroes side by side, along with their friends. You can imagine that such a query could quickly get complicated because we would need to repeat the fields at least once—one for each side of the comparison.
+アプリに比較的複雑なページがあり、2人のヒーローとその友達を並べて見ることができるとしましょう。このようなクエリは、比較の各側に対してフィールドを少なくとも1回繰り返す必要があるため、すぐに複雑になる可能性があることが想像できます。
 
-That's why GraphQL includes reusable units called [fragments](https://spec.graphql.org/draft/#sec-Language.Fragments). Fragments let you construct sets of fields, and then include them in queries where needed. Here's an example of how you could solve the above situation using fragments:
+そのため、GraphQLには[フラグメント](https://spec.graphql.org/draft/#sec-Language.Fragments)と呼ばれる再利用可能な単位が含まれています。フラグメントを使用すると、フィールドのセットを構築し、必要に応じてクエリに含めることができます。フラグメントを使用して上記の状況を解決する方法の例を次に示します：
 
 ```graphql
 # { "graphiql": true }
@@ -216,11 +216,11 @@ fragment comparisonFields on Character {
 }
 ```
 
-You can see how the above query would be pretty repetitive if we weren't able to use fragments. The concept of fragments is frequently used to split complicated application data requirements into smaller chunks, especially when you need to combine many UI components with different fragments into one initial data fetch.
+フラグメントを使用できなかった場合、上記のクエリがどれほど繰り返しが多くなるかがわかります。フラグメントの概念は、複雑なアプリケーションのデータ要件をより小さなチャンクに分割するために頻繁に使用されます。特に、多くのUIコンポーネントを異なるフラグメントと組み合わせて1つの初期データ取得にする必要がある場合に便利です。
 
-### Using variables inside fragments
+### フラグメント内での変数の使用
 
-It is possible for fragments to access variables declared in the operation as well:
+フラグメントは、操作で宣言された変数にアクセスすることもできます：
 
 ```graphql
 # { "graphiql": true }
@@ -246,11 +246,11 @@ fragment comparisonFields on Character {
 }
 ```
 
-### Inline Fragments
+### インラインフラグメント
 
-Like many other type systems, GraphQL schemas include the ability to define Interface and Union types. You can learn more about them on the [Schemas and Types page.](/learn/schema/#interfaces)
+他の多くの型システムと同様に、GraphQLスキーマにはInterfaceとUnion型を定義する機能が含まれています。詳細については、[スキーマと型のページ](/learn/schema/#interfaces)をご覧ください。
 
-If you are querying a field that returns an Interface or a Union type, you will need to use _inline fragments_ to access data on the underlying concrete type. It's easiest to see with an example:
+InterfaceまたはUnion型を返すフィールドをクエリする場合、基になる具象型のデータにアクセスするために_インラインフラグメント_を使用する必要があります。例を見るのが最も簡単です：
 
 ```graphql
 # { "graphiql": true, "variables": { "ep": "JEDI" } }
@@ -267,17 +267,17 @@ query HeroForEpisode($ep: Episode!) {
 }
 ```
 
-In this query, the `hero` field returns the type `Character`, which might be either a `Human` or a `Droid` depending on the `episode` argument. In the direct selection, you can only ask for fields on the `Character` interface, such as `name`.
+このクエリでは、`hero`フィールドは`Character`型を返しますが、これは`episode`引数に応じて`Human`または`Droid`のいずれかになる可能性があります。直接選択では、`name`のような`Character`インターフェース上のフィールドのみを要求できます。
 
-To ask for a field on the concrete type, you need to use an inline fragment with a type condition. Because the first fragment is labeled as `... on Droid`, the `primaryFunction` field will only be executed if the `Character` returned from `hero` is of the `Droid` type. Similarly for the `height` field for the `Human` type.
+具象型のフィールドを要求するには、型条件を持つインラインフラグメントを使用する必要があります。最初のフラグメントは`... on Droid`としてラベル付けされているため、`primaryFunction`フィールドは、`hero`から返された`Character`が`Droid`型の場合にのみ実行されます。`Human`型の`height`フィールドについても同様です。
 
-Named fragments can also be used in the same way, since a named fragment always has a type attached.
+名前付きフラグメントは常に型が付随しているため、同じ方法で使用することもできます。
 
-### Meta fields
+### メタフィールド
 
-As we have seen with [Union types](/learn/schema/#union-types), there are some situations where you don't know what type you'll get back from the GraphQL service so you need some way to determine how to handle that data on the client. 
+[Union型](/learn/schema/#union-types)で見たように、GraphQLサービスからどの型が返されるかわからない状況があるため、クライアント上でそのデータをどのように処理するかを決定する方法が必要です。
 
-GraphQL allows you to request `__typename`, a meta field, at any point in a query to get the name of the Object type at that point:
+GraphQLでは、クエリ内の任意の時点で`__typename`というメタフィールドを要求して、その時点でのオブジェクト型の名前を取得できます：
 
 ```graphql
 # { "graphiql": true}
@@ -297,15 +297,15 @@ GraphQL allows you to request `__typename`, a meta field, at any point in a quer
 }
 ```
 
-In the above query, `search` returns a Union type that can be one of three options. Without the `__typename` field, it would be impossible for a client to tell the different types apart.
+上記のクエリでは、`search`は3つのオプションのいずれかとなるUnion型を返します。`__typename`フィールドがなければ、クライアントが異なる型を区別することは不可能です。
 
-All field names beginning with two underscores (`__`) are reserved by GraphQL. In addition to `__typename`, GraphQL services provide the `__schema` and `__type` meta-fields which expose the [introspection](/learn/introspection) system.
+2つのアンダースコア（`__`）で始まるすべてのフィールド名は、GraphQLによって予約されています。`__typename`に加えて、GraphQLサービスは[イントロスペクション](/learn/introspection)システムを公開する`__schema`および`__type`メタフィールドを提供します。
 
-## Directives
+## ディレクティブ
 
-We discussed above how variables enable us to avoid doing manual string interpolation to construct dynamic queries. Passing variables in arguments solves a large class of these problems, but we might also need a way to dynamically change the structure and shape of our queries using variables. For example, we can imagine a UI component that has a summarized and detailed view, where one includes more fields than the other.
+前述したように、変数を使用することで、動的クエリを構築するための手動の文字列補間を回避できます。引数で変数を渡すことで、これらの問題の大部分が解決されますが、変数を使用してクエリの構造と形状を動的に変更する方法も必要になる場合があります。たとえば、要約ビューと詳細ビューを持つUIコンポーネントがあり、一方が他方よりも多くのフィールドを含む場合を想像できます。
 
-Let's construct a query for such a component:
+このようなコンポーネントのクエリを構築してみましょう：
 
 ```graphql
 # { "graphiql": true, "variables": { "episode": "JEDI", "withFriends": false } }
@@ -319,32 +319,32 @@ query Hero($episode: Episode, $withFriends: Boolean!) {
 }
 ```
 
-Try editing the variables above to instead pass `true` for `withFriends`, and see how the result changes.
+上記の変数を編集して、`withFriends`に`true`を渡すと、結果がどのように変わるか試してみてください。
 
-We needed to use a feature in GraphQL called a [directive](https://spec.graphql.org/draft/#sec-Type-System.Directives). Specifically, an _executable directive_ can be attached to a field or fragment inclusion by a client, and can affect execution of the query in any way the server desires. The core GraphQL specification includes exactly two directives, which must be supported by any spec-compliant GraphQL server implementation:
+GraphQLの[ディレクティブ](https://spec.graphql.org/draft/#sec-Type-System.Directives)と呼ばれる機能を使用する必要がありました。具体的には、_実行可能ディレクティブ_は、クライアントによってフィールドまたはフラグメントの包含に添付でき、サーバーが望む方法でクエリの実行に影響を与えることができます。コアGraphQL仕様には、仕様準拠のGraphQLサーバー実装でサポートする必要がある2つのディレクティブが含まれています：
 
-- `@include(if: Boolean)` Only include this field in the result if the argument is `true`.
-- `@skip(if: Boolean)` Skip this field if the argument is `true`.
+- `@include(if: Boolean)` 引数が`true`の場合のみ、このフィールドを結果に含めます。
+- `@skip(if: Boolean)` 引数が`true`の場合、このフィールドをスキップします。
 
-Directives can be useful to get out of situations where you otherwise would need to do string manipulation to add and remove fields in your query. Server implementations may also add experimental features by defining completely new directives.
+ディレクティブは、クエリ内のフィールドを追加および削除するために文字列操作を行う必要がある状況から抜け出すのに役立ちます。サーバー実装は、まったく新しいディレクティブを定義することで、実験的な機能を追加することもできます。
 
 <Callout type="info">
-Looking for information on how to define directives that can be used to annotate the types, fields, or arguments in your GraphQL schema? See the [Schemas and Types page](/learn/schema/#directives) for more information on defining and using type system directives.
+GraphQLスキーマの型、フィールド、または引数に注釈を付けるために使用できるディレクティブを定義する方法に関する情報をお探しですか？型システムディレクティブの定義と使用の詳細については、[スキーマと型のページ](/learn/schema/#directives)をご覧ください。
 </Callout>
 
-## Next steps
+## 次のステップ
 
-To recap what we've learned about queries:
+クエリについて学んだことをまとめましょう：
 
-- A GraphQL operation that reads data starts at the `query` root operation type and traverses the fields in the selection set down to the leaf values, which will be Scalar or Enum types
-- Fields can accept arguments that alter the output of that field
-- Operations can use the `query`, `mutation`, or `subscription` keyword to indicate their type 
-- The operation type keyword can be omitted for certain query operations only
-- Operations should be given unique names, which make requests more expressive and help with debugging
-- Field aliases allow you to rename response keys, include the same field multiple times in the same query, and provide different arguments to the aliased fields
-- Variables are preceded by the `$` character and can be used to provide dynamic values to field arguments
-- A fragment is a reusable selection set of fields that can be used as needed in multiple queries
-- Executable directive can be applied to queries to change the result of a GraphQL query when it's executed on the server
-- All spec-compliant GraphQL servers include the `@include` and `@skip` built-in directives
+- データを読み取るGraphQL操作は、`query`ルート操作タイプから始まり、セレクションセット内のフィールドをScalarまたはEnum型のリーフ値までトラバースします
+- フィールドは、そのフィールドの出力を変更する引数を受け入れることができます
+- 操作は、その型を示すために`query`、`mutation`、または`subscription`キーワードを使用できます
+- 操作タイプキーワードは、特定のクエリ操作でのみ省略できます
+- 操作には一意の名前を付ける必要があります。これにより、リクエストがより表現力豊かになり、デバッグに役立ちます
+- フィールドエイリアスを使用すると、レスポンスキーの名前を変更したり、同じクエリで同じフィールドを複数回含めたり、エイリアスされたフィールドに異なる引数を提供したりできます
+- 変数は`$`文字で始まり、フィールド引数に動的な値を提供するために使用できます
+- フラグメントは、複数のクエリで必要に応じて使用できる再利用可能なフィールドのセレクションセットです
+- 実行可能ディレクティブをクエリに適用して、サーバー上で実行されるときにGraphQLクエリの結果を変更できます
+- すべての仕様準拠GraphQLサーバーには、`@include`および`@skip`組み込みディレクティブが含まれています
 
-Now that we understand the ins and outs of how to read data from a GraphQL server with query operations, it's time to learn how to change data and trigger side effects using [mutations](/learn/mutations/).
+これで、クエリ操作を使用してGraphQLサーバーからデータを読み取る方法のすべてを理解したので、[ミューテーション](/learn/mutations/)を使用してデータを変更し、副作用をトリガーする方法を学びましょう。
